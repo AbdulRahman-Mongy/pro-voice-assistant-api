@@ -1,7 +1,5 @@
-from django.urls import path
-from .api import views
+from django.urls import path, include
 
 urlpatterns = [
-    path('', views.ListCreateScripts.as_view(), name='scripts'),
-    path('copy/', views.CopyScripts.as_view(), name='copy_scripts'),
+    path('api/', include('scripts.api.urls')),
 ]

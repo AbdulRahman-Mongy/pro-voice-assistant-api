@@ -1,4 +1,3 @@
-import json
 from rest_framework.test import APITestCase
 from django.urls import reverse
 from rest_framework.status import *
@@ -82,3 +81,15 @@ class TestScriptsOperations(APITestCase):
         token = response.data['access_token']
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
         return response.data['user']['pk']
+
+    def test_get_script(self):
+        self.create_user("Alice")
+        user_id = self.login_user(credentials={
+            'username': 'Alice',
+            'password': 'admin_admin321',
+            'email': "Alice@gmail.com"
+        })
+        script_id = self.create_script(owner=user_id)
+        path = reverse('script_download', kwargs={'pk': script_id})
+        response = self.client.get(path)
+        self.assertEqual(response.status_code, HTTP_200_OK)
