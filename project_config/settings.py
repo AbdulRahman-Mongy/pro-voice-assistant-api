@@ -23,7 +23,7 @@ env.read_env()
 SECRET_KEY = 'django-insecure-#8k8zuqd_h*(4f&egh_!y13*3*brb8)oxizp)*$d5g2a2+m28-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -44,7 +44,6 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework.authtoken',
-    'accounts',
     'users',
 ]
 
@@ -82,8 +81,16 @@ WSGI_APPLICATION = 'project_config.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': env.dj_db_url("DATABASE_URL")
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'automation',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -154,4 +161,4 @@ ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
-LOGIN_URL = 'http://localhost:8000/accounts/login'
+LOGIN_URL = 'http://localhost:8000/users/login'
