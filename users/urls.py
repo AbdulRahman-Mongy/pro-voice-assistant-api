@@ -7,8 +7,8 @@ from . import views
 urlpatterns = [
     path('', views.UserListView.as_view()),
     path('account-confirm-email/<str:key>/', ConfirmEmailView.as_view()),
-    path('register/', RegisterView.as_view()),
-    path('login/', LoginView.as_view()),
+    path('register/', RegisterView.as_view(), name='register_user'),
+    path('login/', LoginView.as_view(), name='user_login'),
     path('logout/', LogoutView.as_view()),
     path('verify-email/',
          VerifyEmailView.as_view(), name='rest_verify_email'),
