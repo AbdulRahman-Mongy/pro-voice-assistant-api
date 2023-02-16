@@ -23,7 +23,7 @@ env.read_env()
 SECRET_KEY = 'django-insecure-#8k8zuqd_h*(4f&egh_!y13*3*brb8)oxizp)*$d5g2a2+m28-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = []
 
@@ -37,13 +37,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+
+    # third party
     'allauth',
     'allauth.account',
     'dj_rest_auth',
     'dj_rest_auth.registration',
-
     'rest_framework',
     'rest_framework.authtoken',
+    "drf_spectacular",
+
+    # local
     'users',
     'scripts',
 ]
@@ -82,16 +86,8 @@ WSGI_APPLICATION = 'project_config.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'automation',
-        'USER': 'admin',
-        'PASSWORD': 'admin',
-        'HOST': 'localhost',
-        'PORT': '',
-    }
+    'default': env.dj_db_url("DATABASE_URL", default="sqlite:///db.sqlite3")
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -127,7 +123,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -142,7 +137,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-    )
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -150,6 +146,11 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Automation API Docs",
+    "DESCRIPTION": "docs for automation api endpoints and models",
+    "VERSION": "1.0.0",
+}
 
 REST_USE_JWT = True
 
