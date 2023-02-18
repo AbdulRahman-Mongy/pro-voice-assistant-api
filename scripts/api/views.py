@@ -1,6 +1,6 @@
 from .serializers import *
 from scripts.models import *
-from rest_framework import generics
+from rest_framework import generics, filters
 from rest_framework.permissions import *
 from django.http import FileResponse
 from django.db.models import Q
@@ -15,6 +15,8 @@ class ListCreateScripts(generics.ListCreateAPIView):
 class ListScripts(generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = BaseScriptSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name']
 
     def get_queryset(self):
         if self.request.user.is_staff:
