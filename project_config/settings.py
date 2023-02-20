@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'rest_framework',
     'rest_framework.authtoken',
+    "corsheaders",
     "drf_spectacular",
 
     # local
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -164,3 +166,8 @@ ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 # ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 LOGIN_URL = 'http://localhost:8000/users/login'
+
+# TODO: check how to handle desktop apps requests
+#  there is no one url for a frontend, but every user have their own
+CORS_ALLOWED_ORIGINS = ("http://localhost:8080",)
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
