@@ -1,11 +1,11 @@
-Auth is depend on
-- dj-rest-auth
-- django-rest-au
-- django-allauth
+## Running the app
+- first run "docker build ."
+- then run "docker-compose up"
+- then run "docker-compose run web python manage.py migrate"
+- then run "docker-compose run web python manage.py createsuperuser"
 
-
-# Endpoints
-## Auth
+## Endpoints
+### Auth
 - account/login
 - account/logout
 - accounts/register
