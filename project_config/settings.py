@@ -163,14 +163,17 @@ JWT_AUTH_COOKIE = 'jwt-auth'
 JWT_AUTH_REFRESH_COOKIE = 'jwt-refresh'
 
 ACCOUNT_EMAIL_REQUIRED = True
-# ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 
+# disable email confirmation for now
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 # ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 
 LOGIN_URL = 'http://localhost:8000/users/login'
 
 # TODO: check how to handle desktop apps requests
 #  there is no one url for a frontend, but every user have their own
-CORS_ALLOWED_ORIGINS = ("http://localhost:8080",)
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+CORS_ALLOWED_ORIGINS = ("http://localhost:4200",)
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = ["http://localhost:4200"]
+
