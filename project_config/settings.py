@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     "corsheaders",
     "drf_spectacular",
+    "drf_link_header_pagination",
 
     # local
     'users',
@@ -141,6 +142,8 @@ REST_FRAMEWORK = {
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    'DEFAULT_PAGINATION_CLASS': 'drf_link_header_pagination.LinkHeaderPagination',
+    'PAGE_SIZE': 10,
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -173,3 +176,4 @@ LOGIN_URL = 'http://localhost:8000/users/login'
 CORS_ALLOWED_ORIGINS = ("http://localhost:4200",)
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = ["http://localhost:4200"]
+
