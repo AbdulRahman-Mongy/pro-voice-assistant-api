@@ -6,7 +6,7 @@ from django.http import FileResponse
 from django.db.models import Q
 
 
-class ListCreateScripts(generics.ListCreateAPIView):
+class CreateScripts(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = BaseScript.objects.all()
     serializer_class = BaseScriptSerializer
