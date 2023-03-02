@@ -1,4 +1,4 @@
 from django.test import TestCase
-from .api.tests import *
+from .api.scripts.tests import *
 
 

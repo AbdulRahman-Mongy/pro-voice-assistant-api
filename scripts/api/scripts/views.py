@@ -21,7 +21,7 @@ class ListScripts(generics.ListAPIView):
     def get_queryset(self):
         if self.request.user.is_staff:
             return BaseScript.objects.all()
-        domain = Q(owner=self.request.user.id) | Q(state='public')
+        domain = Q(owner=self.request.user.id)
         queryset = BaseScript.objects.filter(domain)
         return queryset
 

@@ -94,7 +94,7 @@ class TestScriptsOperations(APITestCase):
             'name': 'This is a copy by Bob',
         }
 
-        response = self.client.post(reverse('copy_scripts'), data)
+        response = self.client.post(reverse('fork_scripts'), data)
         owner2 = response.data['owner']
         self.assertNotEqual(owner1, owner2)
         self.assertEqual(response.status_code, HTTP_201_CREATED)
