@@ -39,7 +39,7 @@ class TestCommandsOperations(TestScriptsOperations):
     def test_create_command_with_unauthorized_script(self):
         user_id = self.get_new_user("Bobby")
         script_id = self.create_script(f"{user_id}")
-        response = self.client.logout()
+        self.client.logout()
         self.owner = self.auth()
         data = self.command_sample_data(script=f'{script_id}')
         response = self.client.post(reverse('commands'), data)

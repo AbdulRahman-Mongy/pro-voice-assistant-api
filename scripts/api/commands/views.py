@@ -33,3 +33,20 @@ class ListCommands(generics.ListAPIView):
         domain = Q(owner=self.request.user.id) | Q(state='public')
         queryset = BaseCommand.objects.filter(domain)
         return queryset
+
+
+class DetailCommands(generics.RetrieveUpdateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = BaseCommandSerializer
+    queryset = BaseCommand.objects.all()
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return BaseCommand.objects.all()
+        domain = Q(owner=self.request.user.id) | Q(state='public')
+        queryset = BaseCommand.objects.filter(domain)
+        return queryset
+
+
+
