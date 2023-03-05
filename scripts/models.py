@@ -29,6 +29,7 @@ class BaseCommand(models.Model):
         ],
         default='private',
     )
+    icon = models.ImageField(upload_to='images/', default='images/default_icon.jpg')
 
     def __str__(self):
         return self.name
