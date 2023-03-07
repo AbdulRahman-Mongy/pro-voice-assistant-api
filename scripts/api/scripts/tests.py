@@ -51,9 +51,23 @@ class TestScriptsOperations(APITestCase):
         })
         return user_id
 
+    def get_new_user(self, name):
+        self.create_user(name)
+        user_id = self.login_user(credentials={
+            'username': name,
+            'password': 'admin_admin321',
+            'email': f"{name}@gmail.com"
+        })
+        return user_id
+
     def create_script(self, owner):
         data = self.script_sample_data(owner=owner)
         response = self.client.post(reverse('scripts'), data)
+
+        # reset the cursor so that we can reread the files
+        self.file.seek(0)
+        self.dependency_file.seek(0)
+
         return response.data['id']
 
     def script_sample_data(self, **kwargs):
@@ -82,19 +96,14 @@ class TestScriptsOperations(APITestCase):
     def test_fork_script(self):
         owner1 = self.owner
         script_id = self.create_script(owner=owner1)
-        self.create_user("Bob")
-        user_id = self.login_user(credentials={
-            'username': 'Bob',
-            'password': 'admin_admin321',
-            'email': "Bob@gmail.com"
-        })
+        user_id = self.get_new_user("Bob")
         data = {
             'id': f'{script_id}',
             'owner': f"{user_id}",
             'name': 'This is a copy by Bob',
         }
 
-        response = self.client.post(reverse('copy_scripts'), data)
+        response = self.client.post(reverse('fork_scripts'), data)
         owner2 = response.data['owner']
         self.assertNotEqual(owner1, owner2)
         self.assertEqual(response.status_code, HTTP_201_CREATED)
