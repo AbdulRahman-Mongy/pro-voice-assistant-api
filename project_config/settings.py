@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-#8k8zuqd_h*(4f&egh_!y13*3*brb8)oxizp)*$d5g2a2+m28-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -89,7 +89,14 @@ WSGI_APPLICATION = 'project_config.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': env.dj_db_url("DATABASE_URL", default="sqlite:///db.sqlite3")
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env.str('DATABASE_NAME', 'api-db'),
+        'USER': env.str('DATABASE_USER', 'api-db'),
+        'PASSWORD': env.str('DATABASE_PASSWORD', 'api-db'),
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+    }
 }
 
 # Password validation
@@ -177,3 +184,5 @@ CORS_ALLOWED_ORIGINS = ("http://localhost:4200",)
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = ["http://localhost:4200"]
 
+STATIC_URL = env.str('STATIC_URL', default='/static/')
+STATIC_ROOT = BASE_DIR / 'static'
