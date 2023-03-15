@@ -11,6 +11,9 @@ class TestCommandsOperations(TestScriptsOperations):
     def setUp(self):
         super(TestCommandsOperations, self).setUp()
 
+    def tearDown(self):
+        super(TestCommandsOperations, self).tearDown()
+
     def create_command(self, **kwargs):
         data = self.command_sample_data(**kwargs)
         response = self.client.post(reverse('commands'), data)
@@ -43,4 +46,16 @@ class TestCommandsOperations(TestScriptsOperations):
         self.owner = self.auth()
         data = self.command_sample_data(script=f'{script_id}')
         response = self.client.post(reverse('commands'), data)
+        self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)
+
+    def test_delete_my_command(self):
+        command = self.create_command()
+        response = self.client.delete(reverse('detail_commands', kwargs={'id': command}))
+        self.assertEqual(response.status_code, HTTP_204_NO_CONTENT)
+
+    def test_delete_unauthorized_command(self):
+        command = self.create_command()
+        self.client.logout()
+        user_id = self.get_new_user("Unauthorized_User")
+        response = self.client.delete(reverse('detail_commands', kwargs={'id': command}))
         self.assertEqual(response.status_code, HTTP_403_FORBIDDEN)

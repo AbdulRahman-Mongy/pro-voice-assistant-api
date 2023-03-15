@@ -33,3 +33,9 @@ class BaseCommand(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Patterns(models.Model):
+    syntax = models.TextField()
+    command = models.ForeignKey(BaseCommand, on_delete=models.CASCADE)
+    

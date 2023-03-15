@@ -35,7 +35,7 @@ class ListCommands(generics.ListAPIView):
         return queryset
 
 
-class DetailCommands(generics.RetrieveUpdateAPIView):
+class DetailCommands(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [AllowAny]
     serializer_class = BaseCommandSerializer
     queryset = BaseCommand.objects.all()
@@ -48,5 +48,15 @@ class DetailCommands(generics.RetrieveUpdateAPIView):
         queryset = BaseCommand.objects.filter(domain)
         return queryset
 
+    def delete(self, request, *args, **kwargs):
+        if self.is_allowed_to_delete_command(request, *args, **kwargs):
+            return self.destroy(request, *args, **kwargs)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
-
+    def is_allowed_to_delete_command(self, request, *args, **kwargs):
+        pk = kwargs.get('id')
+        command = BaseCommand.objects.filter(pk=pk)
+        if command and command[0].owner.id != request.user.id:
+            return False
+        return True
