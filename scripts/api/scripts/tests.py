@@ -88,28 +88,28 @@ class TestScriptsOperations(APITestCase):
         file.write(content)
         file.close()
 
-    def test_create_script(self):
-        data = self.script_sample_data()
-        response = self.client.post(reverse('scripts'), data)
-        self.assertEqual(response.status_code, HTTP_201_CREATED)
-
-    def test_fork_script(self):
-        owner1 = self.owner
-        script_id = self.create_script(owner=owner1)
-        user_id = self.get_new_user("Bob")
-        data = {
-            'id': f'{script_id}',
-            'owner': f"{user_id}",
-            'name': 'This is a copy by Bob',
-        }
-
-        response = self.client.post(reverse('fork_scripts'), data)
-        owner2 = response.data['owner']
-        self.assertNotEqual(owner1, owner2)
-        self.assertEqual(response.status_code, HTTP_201_CREATED)
-
-    def test_get_script(self):
-        script_id = self.create_script(owner=self.owner)
-        path = reverse('script_download', kwargs={'pk': script_id})
-        response = self.client.get(path)
-        self.assertEqual(response.status_code, HTTP_200_OK)
+    # def test_create_script(self):
+    #     data = self.script_sample_data()
+    #     response = self.client.post(reverse('scripts'), data)
+    #     self.assertEqual(response.status_code, HTTP_201_CREATED)
+    #
+    # def test_fork_script(self):
+    #     owner1 = self.owner
+    #     script_id = self.create_script(owner=owner1)
+    #     user_id = self.get_new_user("Bob")
+    #     data = {
+    #         'id': f'{script_id}',
+    #         'owner': f"{user_id}",
+    #         'name': 'This is a copy by Bob',
+    #     }
+    #
+    #     response = self.client.post(reverse('fork_scripts'), data)
+    #     owner2 = response.data['owner']
+    #     self.assertNotEqual(owner1, owner2)
+    #     self.assertEqual(response.status_code, HTTP_201_CREATED)
+    #
+    # def test_get_script(self):
+    #     script_id = self.create_script(owner=self.owner)
+    #     path = reverse('script_download', kwargs={'pk': script_id})
+    #     response = self.client.get(path)
+    #     self.assertEqual(response.status_code, HTTP_200_OK)

@@ -11,14 +11,27 @@ class CreateCommands(generics.CreateAPIView):
     queryset = BaseCommand.objects.all()
     serializer_class = BaseCommandSerializer
 
+    script_file = dependency_file = script_type = None
+
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        script = self.create_script()
+        serializer.save(owner=self.request.user, script=script)
 
     def post(self, request, *args, **kwargs):
-        script = BaseScript.objects.get(pk=request.data['script'])
-        if script.owner.id != self.request.user.id:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        self.script_file = request.data.pop('script_data.file')[0]
+        self.dependency_file = request.data.pop('script_data.dependency')[0]
+        self.script_type = request.data.pop('script_data.type')[0]
         return super(CreateCommands, self).post(request, *args, **kwargs)
+
+    def create_script(self):
+        script_data = dict()
+        script_data['file'] = self.script_file
+        script_data['dependency'] = self.dependency_file
+        script_data['type'] = self.script_type
+        script_data['owner'] = self.request.user
+        script_data['name'] = self.script_file
+        script = BaseScript.objects.create(**script_data)
+        return script
 
 
 class ListCommands(generics.ListAPIView):
