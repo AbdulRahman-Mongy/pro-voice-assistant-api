@@ -62,12 +62,32 @@ class DetailCommands(generics.RetrieveUpdateDestroyAPIView):
         return queryset
 
     def delete(self, request, *args, **kwargs):
-        if self.is_allowed_to_delete_command(request, *args, **kwargs):
+        if self.is_allowed_to_delete_or_update_command(request, *args, **kwargs):
             return self.destroy(request, *args, **kwargs)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-    def is_allowed_to_delete_command(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
+        if self.is_allowed_to_delete_or_update_command(request, *args, **kwargs):
+            self.update_scripts(request, *args, **kwargs)
+            return self.update(request, *args, **kwargs)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+    def update_scripts(self, request, *args, **kwargs):
+        script_file = request.data.pop('script_data.file')[0] or ''
+        dependency_file = request.data.pop('script_data.dependency')[0] or ''
+        script_type = request.data.pop('script_data.type')[0] or ''
+        pk = kwargs.get('id')
+        command = BaseCommand.objects.filter(pk=pk)
+        if command:
+            script = command[0].script
+            script.type = script_type if script_type else script.type
+            script.file = script_file if script_file else script.file
+            script.dependency = dependency_file if dependency_file else script.dependency
+            script.save()
+
+    def is_allowed_to_delete_or_update_command(self, request, *args, **kwargs):
         pk = kwargs.get('id')
         command = BaseCommand.objects.filter(pk=pk)
         if command and command[0].owner.id != request.user.id:

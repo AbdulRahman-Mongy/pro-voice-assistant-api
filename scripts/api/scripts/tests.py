@@ -15,8 +15,8 @@ class TestScriptsOperations(APITestCase):
         self.owner = self.auth()
         file_name = 'new_file.txt'
         dependency_file_name = 'new_dep.txt'
-        self.create_file(file_name, "This is a dummy script")
-        self.create_file(dependency_file_name, "This is a dummy dependency")
+        self.create_file(file_name, "This_is_a_dummy_script")
+        self.create_file(dependency_file_name, "This_is_a_dummy_dependency")
         self.file = open(file_name, 'r')
         self.dependency_file = open(dependency_file_name, 'r')
 

@@ -42,3 +42,4 @@ class DownloadScripts(generics.RetrieveAPIView):
         script = self.queryset.get(pk=pk)
         file_name = script.file.name
         return FileResponse(open(file_name, 'rb'), as_attachment=True)
+

@@ -3,8 +3,8 @@ from scripts.models import *
 
 
 class CommandScriptSerializer(serializers.ModelSerializer):
-    file = serializers.FileField()
-    dependency = serializers.FileField()
+    file = serializers.FileField(required=False)
+    dependency = serializers.FileField(required=False)
 
     class Meta:
         model = BaseScript
