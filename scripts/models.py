@@ -3,7 +3,7 @@ from users.models import CustomUser
 
 
 class BaseScript(models.Model):
-    name = models.CharField(max_length=250, default='_New')
+    name = models.TextField(default='_New')
     file = models.FileField(upload_to='files/', null=True)
     dependency = models.FileField(upload_to='files/', null=True)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
