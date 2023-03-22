@@ -3,14 +3,15 @@ from users.models import CustomUser
 
 
 class BaseScript(models.Model):
-    name = models.CharField(max_length=250)
+    name = models.TextField(default='_New')
     file = models.FileField(upload_to='files/', null=True)
     dependency = models.FileField(upload_to='files/', null=True)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    type = models.CharField(default='py', max_length=100)
     is_reviewed = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return self.file.name
 
 
 class BaseCommand(models.Model):
@@ -18,7 +19,6 @@ class BaseCommand(models.Model):
     name = models.CharField(max_length=250)
     script = models.ForeignKey(BaseScript, on_delete=models.CASCADE)
     description = models.TextField(null=True)
-    parameters = models.TextField(null=True)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     is_reviewed = models.BooleanField(default=False)
     state = models.CharField(
@@ -33,3 +33,13 @@ class BaseCommand(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Patterns(models.Model):
+    syntax = models.TextField()
+    command = models.ForeignKey(BaseCommand, on_delete=models.CASCADE)
+
+
+class Parameters(models.Model):
+    name = models.CharField(max_length=250)
+    command = models.ForeignKey(BaseCommand, on_delete=models.CASCADE)
