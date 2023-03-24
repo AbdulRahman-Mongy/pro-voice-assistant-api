@@ -29,7 +29,7 @@ class CreateCommands(generics.CreateAPIView):
         script_data['dependency'] = self.dependency_file
         script_data['type'] = self.script_type
         script_data['owner'] = self.request.user
-        script_data['name'] = self.script_file
+        script_data['name'] = self.script_file.name
         script = BaseScript.objects.create(**script_data)
         return script
 
