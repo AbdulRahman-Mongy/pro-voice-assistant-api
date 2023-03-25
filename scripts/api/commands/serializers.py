@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from scripts.models import *
+from scripts.utils import *
 
 
 class CommandScriptSerializer(serializers.ModelSerializer):
@@ -50,3 +51,22 @@ class BaseCommandSerializer(serializers.ModelSerializer):
         for param in parameters:
             Parameters.objects.create(command=command, **param)
         return command
+
+
+class BaseCommandCopySerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    patterns = PatternsSerializer(many=True, required=False)
+    parameters = ParametersSerializer(many=True, required=False)
+    script_data = CommandScriptSerializer(many=False, required=False)
+
+    class Meta:
+        model = BaseCommand
+        fields = (
+            "id",
+            "name",
+            "description",
+            "patterns",
+            "parameters",
+            "icon",
+            "script_data",
+        )

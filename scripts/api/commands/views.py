@@ -29,7 +29,7 @@ class CreateCommands(generics.CreateAPIView):
         script_data['dependency'] = self.dependency_file
         script_data['type'] = self.script_type
         script_data['owner'] = self.request.user
-        script_data['name'] = self.script_file
+        script_data['name'] = self.script_file.name
         script = BaseScript.objects.create(**script_data)
         return script
 
@@ -93,3 +93,48 @@ class DetailCommands(generics.RetrieveUpdateDestroyAPIView):
         if command and command[0].owner.id != request.user.id:
             return False
         return True
+
+
+class ForkCommands(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BaseCommandCopySerializer
+    queryset = BaseCommand.objects.all()
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return BaseCommand.objects.all()
+        domain = Q(owner=self.request.user.id) | Q(state='public')
+        queryset = BaseCommand.objects.filter(domain)
+        return queryset
+
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('id')
+        command = self.queryset.get(pk=pk)
+        fork_command = self.get_forked_command(command, request, *args, **kwargs)
+        serializer = BaseCommandCopySerializer(fork_command, many=False)
+        return Response(serializer.data)
+
+    def get_forked_command(self, command, request, *args, **kwargs):
+        owner = self.request.user
+        # django trick to duplicate objects
+        script = command.script
+        script.pk = None
+        script.owner = owner
+        script.save()
+        created_command = BaseCommand.objects.get(pk=command.pk)
+        created_command.pk = None
+        created_command.owner = owner
+        created_command.script = script
+        created_command.save()
+
+        parameters = Parameters.objects.filter(command=command.id)
+        patterns = Patterns.objects.filter(command=command.id)
+        for param in parameters:
+            param.pk = None
+            param.command = created_command
+            param.save()
+        for pattern in patterns:
+            pattern.pk = None
+            pattern.command = created_command
+            pattern.save()
+        return created_command
