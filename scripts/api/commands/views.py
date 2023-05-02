@@ -1,3 +1,5 @@
+import json
+
 from .serializers import *
 from scripts.models import *
 from rest_framework import generics, filters, status
@@ -18,9 +20,23 @@ class CreateCommands(generics.CreateAPIView):
         serializer.save(owner=self.request.user, script=script)
 
     def post(self, request, *args, **kwargs):
-        self.script_file = request.data.pop('script_data.file')[0]
-        self.dependency_file = request.data.pop('script_data.dependency')[0]
-        self.script_type = request.data.pop('script_data.type')[0]
+        self.script_file = request.data.pop('script_data.script')[0]
+        self.dependency_file = request.data.pop('script_data.requirements')[0]
+        self.script_type = request.data.pop('script_data.scriptType')[0]
+
+        # TODO: check if the icon is sent in the request, if not, set the default icon
+        # TODO: check that the key exists in the request before accessing it
+
+        request.data['parameters[0]'] = json.loads(request.data.get('parameters[0]'))
+        request.data['parameters[1]'] = json.loads(request.data.get('parameters[1]'))
+        request.data['parameters[2]'] = json.loads(request.data.get('parameters[2]'))
+        request.data['parameters[3]'] = json.loads(request.data.get('parameters[3]'))
+
+        request.data['patterns[0]'] = json.loads(request.data.get('patterns[0]'))
+        request.data['patterns[1]'] = json.loads(request.data.get('patterns[1]'))
+        request.data['patterns[2]'] = json.loads(request.data.get('patterns[2]'))
+        request.data['patterns[3]'] = json.loads(request.data.get('patterns[3]'))
+
         return super(CreateCommands, self).post(request, *args, **kwargs)
 
     def create_script(self):
