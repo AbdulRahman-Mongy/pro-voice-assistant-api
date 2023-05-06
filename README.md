@@ -1,8 +1,9 @@
 ## Running the app
-- first run "docker build ."
-- then run "docker-compose up"
-- then run "docker-compose run web python manage.py migrate"
-- then run "docker-compose run web python manage.py createsuperuser"
+- `python manage.py runserver` will not work, because of ASGI
+  - use `daphne project_config.asgi:application` instead
+
+Dependencies:
+- redis: you to install and run redis server
 
 ## Endpoints
 ### Auth

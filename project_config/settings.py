@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_spectacular",
     "drf_link_header_pagination",
+    "channels",
 
     # local
     'users',
@@ -87,6 +88,14 @@ WSGI_APPLICATION = 'project_config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+
+# DATABASES = {
+#     # sqlite3 is used for development
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 DATABASES = {
     'default': {
@@ -186,3 +195,15 @@ CSRF_TRUSTED_ORIGINS = ["http://localhost:4200"]
 
 STATIC_URL = env.str('STATIC_URL', default='/static/')
 STATIC_ROOT = BASE_DIR / 'static'
+
+# ASGI CONFIGURATION FOR CHANNELS
+ASGI_APPLICATION = 'project_config.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
