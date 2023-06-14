@@ -6,6 +6,7 @@ from rest_framework import generics, filters, status
 from rest_framework.permissions import *
 from django.db.models import Q
 from rest_framework.response import Response
+from scripts.utils import FileHelper
 
 
 class CreateCommands(generics.CreateAPIView):
@@ -13,41 +14,55 @@ class CreateCommands(generics.CreateAPIView):
     queryset = BaseCommand.objects.all()
     serializer_class = BaseCommandSerializer
 
-    script_file = dependency_file = script_type = None
+    command = script_file = dependency_file = script_type = None
 
     def perform_create(self, serializer):
         script = self.create_script()
-        serializer.save(owner=self.request.user, script=script)
+        self.command = serializer.save(owner=self.request.user, script=script)
 
     def post(self, request, *args, **kwargs):
-        self.script_file = request.data.pop('script_data.script')[0]
-        self.dependency_file = request.data.pop('script_data.requirements')[0]
-        self.script_type = request.data.pop('script_data.scriptType')[0]
+        self.script_file = request.data.pop('script_data.script', [FileHelper.get_file_from_request('script')])[0]
+        self.dependency_file = \
+            request.data.pop('script_data.requirements', [FileHelper.get_file_from_request('requirements')])[0]
+        self.script_type = request.data.pop('script_data.scriptType', ['py'])[0]
 
-        # TODO: check if the icon is sent in the request, if not, set the default icon
-        # TODO: check that the key exists in the request before accessing it
+        patterns = self.get_related_objects('patterns', request.data)
+        parameters = self.get_related_objects('parameters', request.data)
 
-        request.data['parameters[0]'] = json.loads(request.data.get('parameters[0]'))
-        request.data['parameters[1]'] = json.loads(request.data.get('parameters[1]'))
-        request.data['parameters[2]'] = json.loads(request.data.get('parameters[2]'))
-        request.data['parameters[3]'] = json.loads(request.data.get('parameters[3]'))
+        response = super(CreateCommands, self).post(request, *args, **kwargs)
 
-        request.data['patterns[0]'] = json.loads(request.data.get('patterns[0]'))
-        request.data['patterns[1]'] = json.loads(request.data.get('patterns[1]'))
-        request.data['patterns[2]'] = json.loads(request.data.get('patterns[2]'))
-        request.data['patterns[3]'] = json.loads(request.data.get('patterns[3]'))
+        self.assign_related_objects(self.command, Patterns, patterns)
+        self.assign_related_objects(self.command, Parameters, parameters)
 
-        return super(CreateCommands, self).post(request, *args, **kwargs)
+        return response
+
+    @staticmethod
+    def get_related_objects(relation_name, data):
+        related_list = [data[k] for k in data if k.startswith(relation_name)]
+        to_remove = [k for k in data if k.startswith(relation_name)]
+        for k in to_remove:
+            data.pop(k)
+        return related_list
+
+    @staticmethod
+    def assign_related_objects(command_id, cls, data_list):
+        for element in data_list:
+            values = json.loads(element)
+            cls.objects.create(**values, command=command_id)
 
     def create_script(self):
-        script_data = dict()
-        script_data['file'] = self.script_file
-        script_data['dependency'] = self.dependency_file
-        script_data['type'] = self.script_type
-        script_data['owner'] = self.request.user
-        script_data['name'] = self.script_file.name
+        script_data = self._prepare_script_data()
         script = BaseScript.objects.create(**script_data)
         return script
+
+    def _prepare_script_data(self):
+        return {
+            'file': self.script_file,
+            'dependency': self.dependency_file,
+            'type': self.script_type,
+            'owner': self.request.user,
+            'name': self.script_file.name
+        }
 
 
 class ListCommands(generics.ListAPIView):

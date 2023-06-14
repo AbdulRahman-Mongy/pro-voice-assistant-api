@@ -25,9 +25,12 @@ class TestCommandsOperations(TestScriptsOperations):
         data = {
             "name": 'Test Command Name',
             "description": 'Test Command Description',
-            "script_data.file": self.file,
-            "script_data.dependency": self.dependency_file,
-            "script_data.type": ["py"],
+            "script_data.script": self.file,
+            "script_data.requirements": self.dependency_file,
+            "script_data.scriptType": ["py"],
+            "patterns[0]": '{"syntax": "pat0"}',
+            "parameters[0]": '{"name": "param0"}',
+            "parameters[1]": '{"name": "param1"}',
         }
         # currently we have to declare script_data in this way due to serialization issues with the files
         for key, value in kwargs.items():
@@ -36,11 +39,21 @@ class TestCommandsOperations(TestScriptsOperations):
         return data
 
     def test_create_command(self):
+        """
+            Asserting the command created with correct values
+        """
+
         data = self.command_sample_data()
         response = self.client.post(reverse('commands'), data)
         self.assertEqual(response.status_code, HTTP_201_CREATED)
         created_command = BaseCommand.objects.get(pk=response.data['id'])
         self.assertEqual(created_command.owner, created_command.script.owner)
+        self.assertEqual(1, len(Patterns.objects.filter(command=created_command)))
+        self.assertEqual(2, len(Parameters.objects.filter(command=created_command)))
+        created_script = created_command.script
+        self.file.seek(0)
+        self.assertEqual(created_script.file.read(), self.file.read().encode('utf-8'))
+        self.file.seek(0)
 
     def test_update_command(self):
         data = self.command_sample_data()
