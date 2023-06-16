@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from scripts.models import *
-from scripts.utils import *
 
 
 class CommandScriptSerializer(serializers.ModelSerializer):
@@ -9,7 +8,7 @@ class CommandScriptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BaseScript
-        fields = ['file', 'dependency', 'type']
+        fields = ['script', 'requirements', 'scriptType']
 
 
 class PatternsSerializer(serializers.ModelSerializer):
@@ -41,16 +40,6 @@ class BaseCommandSerializer(serializers.ModelSerializer):
             "icon",
             "script_data",
         )
-
-    def create(self, validated_data):
-        patterns = validated_data.get('patterns', [])
-        parameters = validated_data.get('parameters', [])
-        command = BaseCommand.objects.create(**validated_data)
-        for pattern in patterns:
-            Patterns.objects.create(command=command, **pattern)
-        for param in parameters:
-            Parameters.objects.create(command=command, **param)
-        return command
 
 
 class BaseCommandCopySerializer(serializers.ModelSerializer):

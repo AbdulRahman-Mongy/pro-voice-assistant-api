@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 
 from environs import Env
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -98,14 +99,7 @@ WSGI_APPLICATION = 'project_config.wsgi.application'
 # }
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env.str('DATABASE_NAME', 'api-db'),
-        'USER': env.str('DATABASE_USER', 'api-db'),
-        'PASSWORD': env.str('DATABASE_PASSWORD', 'api-db'),
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
+    'default': env.dj_db_url("DATABASE_URL", default="sqlite:///db.sqlite3")
 }
 
 # Password validation

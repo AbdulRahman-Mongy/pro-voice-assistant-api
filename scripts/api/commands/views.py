@@ -1,9 +1,12 @@
+import json
+
 from .serializers import *
 from scripts.models import *
 from rest_framework import generics, filters, status
 from rest_framework.permissions import *
 from django.db.models import Q
 from rest_framework.response import Response
+from scripts.utils import FileHelper
 
 
 class CreateCommands(generics.CreateAPIView):
@@ -11,27 +14,55 @@ class CreateCommands(generics.CreateAPIView):
     queryset = BaseCommand.objects.all()
     serializer_class = BaseCommandSerializer
 
-    script_file = dependency_file = script_type = None
+    command = script_file = dependency_file = script_type = None
 
     def perform_create(self, serializer):
         script = self.create_script()
-        serializer.save(owner=self.request.user, script=script)
+        self.command = serializer.save(owner=self.request.user, script=script)
 
     def post(self, request, *args, **kwargs):
-        self.script_file = request.data.pop('script_data.file')[0]
-        self.dependency_file = request.data.pop('script_data.dependency')[0]
-        self.script_type = request.data.pop('script_data.type')[0]
-        return super(CreateCommands, self).post(request, *args, **kwargs)
+        self.script_file = request.data.pop('script_data.script', [FileHelper.get_file_from_request('script')])[0]
+        self.dependency_file = \
+            request.data.pop('script_data.requirements', [FileHelper.get_file_from_request('requirements')])[0]
+        self.script_type = request.data.pop('script_data.scriptType', ['py'])[0]
+
+        patterns = self.get_related_objects('patterns', request.data)
+        parameters = self.get_related_objects('parameters', request.data)
+
+        response = super(CreateCommands, self).post(request, *args, **kwargs)
+
+        self.assign_related_objects(self.command, Patterns, patterns)
+        self.assign_related_objects(self.command, Parameters, parameters)
+
+        return response
+
+    @staticmethod
+    def get_related_objects(relation_name, data):
+        related_list = [data[k] for k in data if k.startswith(relation_name)]
+        to_remove = [k for k in data if k.startswith(relation_name)]
+        for k in to_remove:
+            data.pop(k)
+        return related_list
+
+    @staticmethod
+    def assign_related_objects(command_id, cls, data_list):
+        for element in data_list:
+            values = json.loads(element)
+            cls.objects.create(**values, command=command_id)
 
     def create_script(self):
-        script_data = dict()
-        script_data['file'] = self.script_file
-        script_data['dependency'] = self.dependency_file
-        script_data['type'] = self.script_type
-        script_data['owner'] = self.request.user
-        script_data['name'] = self.script_file.name
+        script_data = self._prepare_script_data()
         script = BaseScript.objects.create(**script_data)
         return script
+
+    def _prepare_script_data(self):
+        return {
+            'file': self.script_file,
+            'dependency': self.dependency_file,
+            'type': self.script_type,
+            'owner': self.request.user,
+            'name': self.script_file.name
+        }
 
 
 class ListCommands(generics.ListAPIView):
