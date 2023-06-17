@@ -24,7 +24,7 @@ env.read_env()
 SECRET_KEY = 'django-insecure-#8k8zuqd_h*(4f&egh_!y13*3*brb8)oxizp)*$d5g2a2+m28-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=False)
+DEBUG = env.bool('DEBUG', default=True)
 
 ALLOWED_HOSTS = ['*']
 
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     "corsheaders",
     "drf_spectacular",
+    'drf_spectacular_sidecar',  # required for Django collectstatic discovery
     "drf_link_header_pagination",
     "channels",
 
@@ -165,6 +166,9 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Automation API Docs",
     "DESCRIPTION": "docs for automation api endpoints and models",
     "VERSION": "1.0.0",
+    'SWAGGER_UI_DIST': 'SIDECAR',  # shorthand to use the sidecar instead
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    'REDOC_DIST': 'SIDECAR',
 }
 
 REST_USE_JWT = True

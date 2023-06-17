@@ -8,7 +8,8 @@ class CommandScriptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BaseScript
-        fields = ['script', 'requirements', 'scriptType']
+        # fields = ['script', 'requirements', 'scriptType']
+        fields = ["file", "dependency"]
 
 
 class PatternsSerializer(serializers.ModelSerializer):
