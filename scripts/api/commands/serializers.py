@@ -8,7 +8,6 @@ class CommandScriptSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BaseScript
-        # fields = ['script', 'requirements', 'scriptType']
         fields = ["file", "dependency"]
 
 
@@ -60,3 +59,9 @@ class BaseCommandCopySerializer(serializers.ModelSerializer):
             "icon",
             "script_data",
         )
+
+
+class BaseCommandBuildSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BaseCommand
+        fields = ('command_exe_link',)

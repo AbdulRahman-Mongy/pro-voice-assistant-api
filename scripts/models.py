@@ -19,6 +19,7 @@ class BaseCommand(models.Model):
     name = models.CharField(max_length=250)
     script = models.ForeignKey(BaseScript, on_delete=models.CASCADE)
     description = models.TextField(null=True)
+    command_exe_link = models.URLField(null=True, max_length=1024)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     is_reviewed = models.BooleanField(default=False)
     state = models.CharField(

@@ -11,6 +11,14 @@ from rest_framework.response import Response
 from scripts.utils import FileHelper
 
 
+def get_related_objects(relation_name, data):
+    related_list = [data[k] for k in data if k.startswith(relation_name)]
+    to_remove = [k for k in data if k.startswith(relation_name)]
+    for k in to_remove:
+        data.pop(k)
+    return related_list
+
+
 class CreateCommands(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = BaseCommand.objects.all()
@@ -28,8 +36,8 @@ class CreateCommands(generics.CreateAPIView):
             request.data.pop('script_data.requirements', [FileHelper.get_file_from_request('requirements')])[0]
         self.script_type = request.data.pop('script_data.scriptType', ['py'])[0]
 
-        patterns = self.get_related_objects('patterns', request.data)
-        parameters = self.get_related_objects('parameters', request.data)
+        patterns = get_related_objects('patterns', request.data)
+        parameters = get_related_objects('parameters', request.data)
 
         response = super(CreateCommands, self).post(request, *args, **kwargs)
 
@@ -37,14 +45,6 @@ class CreateCommands(generics.CreateAPIView):
         self.assign_related_objects(self.command, Parameters, parameters)
 
         return response
-
-    @staticmethod
-    def get_related_objects(relation_name, data):
-        related_list = [data[k] for k in data if k.startswith(relation_name)]
-        to_remove = [k for k in data if k.startswith(relation_name)]
-        for k in to_remove:
-            data.pop(k)
-        return related_list
 
     @staticmethod
     def assign_related_objects(command_id, cls, data_list):
@@ -108,11 +108,18 @@ class DetailCommands(generics.RetrieveUpdateDestroyAPIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
     def update_scripts(self, request, *args, **kwargs):
-        script_file = request.data.pop('script_data.file')[0] or ''
-        dependency_file = request.data.pop('script_data.dependency')[0] or ''
-        script_type = request.data.pop('script_data.type')[0] or ''
+        script_file = request.data.pop('script_data.script', [FileHelper.get_file_from_request('script')])[0]
+        dependency_file = \
+        request.data.pop('script_data.requirements', [FileHelper.get_file_from_request('requirements')])[0]
+
+        script_type = request.data.pop('script_data.scriptType', ['py'])[0]
+
         pk = kwargs.get('id')
         command = BaseCommand.objects.filter(pk=pk)
+
+        # TODO: Update patterns and parameters
+        patterns = get_related_objects('patterns', request.data)
+        parameters = get_related_objects('parameters', request.data)
         if command:
             script = command[0].script
             script.type = script_type if script_type else script.type
@@ -171,3 +178,10 @@ class ForkCommands(generics.RetrieveAPIView):
             pattern.command = created_command
             pattern.save()
         return created_command
+
+
+class UpdateCommandAfterBuild(generics.UpdateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = BaseCommandBuildSerializer
+    queryset = BaseCommand.objects.all()
+    lookup_field = 'id'
