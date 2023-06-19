@@ -6,6 +6,7 @@ from rest_framework.status import *
 import os
 from scripts.api.scripts.tests import TestScriptsOperations
 from scripts.models import *
+from scripts.utils import build_script
 
 
 class TestCommandsOperations(TestScriptsOperations):
@@ -54,6 +55,18 @@ class TestCommandsOperations(TestScriptsOperations):
         self.file.seek(0)
         self.assertEqual(created_script.file.read(), self.file.read().encode('utf-8'))
         self.file.seek(0)
+
+    def test_build_executable(self):
+        command_id = self.create_command()
+        command = BaseCommand.objects.get(pk=command_id)
+        files = {
+            'script': command.script.file,
+            'requirements': command.script.dependency
+        }
+        response = build_script(command_id, files)
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, HTTP_202_ACCEPTED)
+        self.assertEqual(content.get('command_id', '0'), str(command_id))
 
     def test_update_command(self):
         data = self.command_sample_data()

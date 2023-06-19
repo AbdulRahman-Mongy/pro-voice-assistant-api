@@ -2,8 +2,11 @@ import datetime
 import io
 import mimetypes
 
+import requests
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
+
+BuilderTest = 'http://localhost:8000/build/python/'
 
 
 class FileHelper:
@@ -21,3 +24,12 @@ class FileHelper:
         return InMemoryUploadedFile(file=io.BytesIO(), name=created_name,
                                     field_name=None, content_type=content_type,
                                     charset=charset, size=0)
+
+
+def build_script(command_id, files):
+    # TODO: change the url
+    response = requests.post(BuilderTest, data={'command_id': command_id}, files={
+                                 'script': files['script'],
+                                 'requirements': files['requirements']
+                             })
+    return response
