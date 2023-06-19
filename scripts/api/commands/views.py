@@ -1,14 +1,14 @@
 import json
 
 import requests
-
+from rest_framework.status import *
 from .serializers import *
 from scripts.models import *
 from rest_framework import generics, filters, status
 from rest_framework.permissions import *
 from django.db.models import Q
 from rest_framework.response import Response
-from scripts.utils import FileHelper
+from scripts.utils import FileHelper, build_script
 
 
 def get_related_objects(relation_name, data):
@@ -43,6 +43,11 @@ class CreateCommands(generics.CreateAPIView):
 
         self.assign_related_objects(self.command, Patterns, patterns)
         self.assign_related_objects(self.command, Parameters, parameters)
+
+        build_script(self.command.id, {
+            'script': self.script_file,
+            'requirements': self.dependency_file
+        })
 
         return response
 
