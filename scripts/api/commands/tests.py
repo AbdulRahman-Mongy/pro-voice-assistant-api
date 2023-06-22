@@ -84,6 +84,11 @@ class TestCommandsOperations(TestScriptsOperations):
         command = BaseCommand.objects.get(pk=command_id)
         self.assertEqual(command.command_exe_link, link)
 
+        # assert the command will not be updated if no link provided
+        response = self.client.put(reverse('exec', kwargs={'id': command_id}), data={})
+        command = BaseCommand.objects.get(pk=command_id)
+        self.assertEqual(command.command_exe_link, link)
+
     def test_update_command(self):
         data = self.command_sample_data()
         response = self.client.post(reverse('commands'), data)

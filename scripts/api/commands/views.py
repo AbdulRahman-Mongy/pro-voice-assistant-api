@@ -1,14 +1,16 @@
 import json
 
-import requests
-from rest_framework.status import *
 from .serializers import *
 from scripts.models import *
+from django.db.models import Q
+from scripts.utils import FileHelper, build_script
+
 from rest_framework import generics, filters, status
 from rest_framework.permissions import *
-from django.db.models import Q
 from rest_framework.response import Response
-from scripts.utils import FileHelper, build_script
+
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 def get_related_objects(relation_name, data):
@@ -17,6 +19,17 @@ def get_related_objects(relation_name, data):
     for k in to_remove:
         data.pop(k)
     return related_list
+
+
+def notify(group, action, message):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        group,
+        {
+            'type': action,
+            'message': message
+        }
+    )
 
 
 class CreateCommands(generics.CreateAPIView):
@@ -115,7 +128,7 @@ class DetailCommands(generics.RetrieveUpdateDestroyAPIView):
     def update_scripts(self, request, *args, **kwargs):
         script_file = request.data.pop('script_data.script', [FileHelper.get_file_from_request('script')])[0]
         dependency_file = \
-        request.data.pop('script_data.requirements', [FileHelper.get_file_from_request('requirements')])[0]
+            request.data.pop('script_data.requirements', [FileHelper.get_file_from_request('requirements')])[0]
 
         script_type = request.data.pop('script_data.scriptType', ['py'])[0]
 
@@ -190,3 +203,7 @@ class UpdateCommandAfterBuild(generics.UpdateAPIView):
     serializer_class = BaseCommandBuildSerializer
     queryset = BaseCommand.objects.all()
     lookup_field = 'id'
+
+    def put(self, request, *args, **kwargs):
+        notify(f'notification_{self.request.user.id}', 'send_notification', request.data)
+        return self.update(request, *args, **kwargs)

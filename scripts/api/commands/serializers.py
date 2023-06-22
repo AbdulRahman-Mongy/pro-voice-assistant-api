@@ -62,6 +62,10 @@ class BaseCommandCopySerializer(serializers.ModelSerializer):
 
 
 class BaseCommandBuildSerializer(serializers.ModelSerializer):
+
+    message = serializers.CharField(required=False)
+    command_exe_link = serializers.URLField(required=False)
+
     class Meta:
         model = BaseCommand
-        fields = ('command_exe_link',)
+        fields = ('command_exe_link', 'message')

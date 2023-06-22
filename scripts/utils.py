@@ -6,7 +6,7 @@ import requests
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-BuilderTest = 'http://localhost:8000/build/python/'
+BuilderTest = 'http://localhost:8069/build/python/'
 
 
 class FileHelper:
