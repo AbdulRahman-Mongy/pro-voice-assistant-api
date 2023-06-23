@@ -205,5 +205,10 @@ class UpdateCommandAfterBuild(generics.UpdateAPIView):
     lookup_field = 'id'
 
     def put(self, request, *args, **kwargs):
-        notify(f'notification_{self.request.user.id}', 'send_notification', request.data)
+        pk = kwargs.get('id')
+        command = BaseCommand.objects.filter(pk=pk)
+        if not command:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        user_id = command[0].owner.id
+        notify(f'notification_{user_id}', 'send_notification', request.data)
         return self.update(request, *args, **kwargs)
