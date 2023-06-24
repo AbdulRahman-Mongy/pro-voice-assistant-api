@@ -5,6 +5,7 @@ import mimetypes
 import requests
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from .models import BaseCommand
 
 BuilderTest = 'http://localhost:8069/build/python/'
 
@@ -28,8 +29,9 @@ class FileHelper:
 
 def build_script(command_id, files):
     # TODO: change the url
+    script = BaseCommand.objects.get(pk=command_id).script
     response = requests.post(BuilderTest, data={'command_id': command_id}, files={
-                                 'script': files['script'],
-                                 'requirements': files['requirements']
+                                 'script': script.file or files['script'],
+                                 'requirements': script.dependency or files['requirements']
                              })
     return response
