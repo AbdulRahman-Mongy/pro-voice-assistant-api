@@ -179,6 +179,13 @@ JWT_AUTH_REFRESH_COOKIE = 'jwt-refresh'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 
+# TOken expiration time settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
 # disable email confirmation for now
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 # ACCOUNT_CONFIRM_EMAIL_ON_GET = True

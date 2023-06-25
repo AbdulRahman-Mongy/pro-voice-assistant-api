@@ -7,7 +7,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from .models import BaseCommand
 
-BuilderTest = 'http://localhost:8069/build/python/'
+BuilderTest = 'http://localhost:8001/build/python/'
 
 
 class FileHelper:
@@ -27,10 +27,12 @@ class FileHelper:
                                     charset=charset, size=0)
 
 
-def build_script(command_id, files):
+def build_script(command_id, command_name, files):
     # TODO: change the url
     script = BaseCommand.objects.get(pk=command_id).script
-    response = requests.post(BuilderTest, data={'command_id': command_id}, files={
+    response = requests.post(BuilderTest,
+                             data={'command_id': command_id, 'command_name': command_name},
+                             files={
                                  'script': script.file or files['script'],
                                  'requirements': script.dependency or files['requirements']
                              })

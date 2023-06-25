@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='basecommand',
-            name='command_exe_link',
+            name='executable_url',
             field=models.URLField(max_length=1024, null=True),
         ),
     ]

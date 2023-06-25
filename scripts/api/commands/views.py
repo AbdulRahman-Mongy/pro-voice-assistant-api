@@ -57,7 +57,7 @@ class CreateCommands(generics.CreateAPIView):
         self.assign_related_objects(self.command, Patterns, patterns)
         self.assign_related_objects(self.command, Parameters, parameters)
 
-        build_script(self.command.id, {
+        build_script(self.command.id, self.command.name, {
             'script': self.script_file,
             'requirements': self.dependency_file
         })

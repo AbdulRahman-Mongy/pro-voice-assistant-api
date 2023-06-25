@@ -58,12 +58,13 @@ class TestCommandsOperations(TestScriptsOperations):
 
     def test_build_executable(self):
         command_id = self.create_command()
+        command_name = "test_command"
         command = BaseCommand.objects.get(pk=command_id)
         files = {
             'script': command.script.file,
             'requirements': command.script.dependency
         }
-        response = build_script(command_id, files)
+        response = build_script(command_id, command_name, files)
         content = json.loads(response.content)
         self.assertEqual(response.status_code, HTTP_202_ACCEPTED)
         self.assertEqual(content.get('command_id', '0'), str(command_id))
@@ -72,22 +73,22 @@ class TestCommandsOperations(TestScriptsOperations):
 
         link = 'https://www.google.com/'
         response = self.client.put(reverse('exec', kwargs={'id': 5}), data={
-            'command_exe_link': link
+            'executable_url': link
         })
         self.assertEqual(response.status_code, HTTP_404_NOT_FOUND)
 
         command_id = self.create_command()
         response = self.client.put(reverse('exec', kwargs={'id': command_id}), data={
-            'command_exe_link': link
+            'executable_url': link
         })
         self.assertEqual(response.status_code, HTTP_200_OK)
         command = BaseCommand.objects.get(pk=command_id)
-        self.assertEqual(command.command_exe_link, link)
+        self.assertEqual(command.executable_url, link)
 
         # assert the command will not be updated if no link provided
         response = self.client.put(reverse('exec', kwargs={'id': command_id}), data={})
         command = BaseCommand.objects.get(pk=command_id)
-        self.assertEqual(command.command_exe_link, link)
+        self.assertEqual(command.executable_url, link)
 
     def test_update_command(self):
         data = self.command_sample_data()
