@@ -1,12 +1,22 @@
 import json
 
 from rest_framework.test import APITestCase
+from unittest.mock import patch
+from django.http import HttpResponse
 from django.urls import reverse
 from rest_framework.status import *
 import os
 from scripts.api.scripts.tests import TestScriptsOperations
 from scripts.models import *
 from scripts.utils import build_script
+
+
+def mock_builder(command_id, command_name, files):
+    return HttpResponse(status=202,
+                        content=json.dumps(
+                            {'command_id': command_id, 'job_id': 1,
+                             'message': "command has been added to the queue"}),
+                        content_type='application/json')
 
 
 class TestCommandsOperations(TestScriptsOperations):
@@ -30,8 +40,8 @@ class TestCommandsOperations(TestScriptsOperations):
             "script_data.requirements": self.dependency_file,
             "script_data.scriptType": ["py"],
             "patterns[0]": '{"syntax": "pat0"}',
-            "parameters[0]": '{"name": "param0"}',
-            "parameters[1]": '{"name": "param1"}',
+            "parameters[0]": '{"order": 1, "name": "param0", "type": "string"}',
+            "parameters[1]": '{"order": 2, "name": "param1", "type": "datetime"}',
         }
         # currently we have to declare script_data in this way due to serialization issues with the files
         for key, value in kwargs.items():
@@ -39,6 +49,7 @@ class TestCommandsOperations(TestScriptsOperations):
                 data[key] = value
         return data
 
+    @patch('scripts.api.commands.views.build_script', mock_builder)
     def test_create_command(self):
         """
             Asserting the command created with correct values
@@ -154,4 +165,3 @@ class TestCommandsOperations(TestScriptsOperations):
         forked_command = BaseCommand.objects.get(pk=response.data['id'])
         self.assertEqual(forked_command.owner.id, user_id)
         self.assertNotEqual(forked_command.owner.id, created_command.owner.id)
-
