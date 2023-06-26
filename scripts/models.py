@@ -42,5 +42,7 @@ class Patterns(models.Model):
 
 
 class Parameters(models.Model):
+    order = models.IntegerField()
     name = models.CharField(max_length=250)
+    type = models.CharField(max_length=250)
     command = models.ForeignKey(BaseCommand, on_delete=models.CASCADE)

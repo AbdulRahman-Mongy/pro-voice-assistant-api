@@ -20,7 +20,7 @@ class PatternsSerializer(serializers.ModelSerializer):
 class ParametersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parameters
-        fields = ['name']
+        fields = ('order', 'name', 'type')
 
 
 class BaseCommandSerializer(serializers.ModelSerializer):
