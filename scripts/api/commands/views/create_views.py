@@ -17,7 +17,9 @@ from scripts.utils import FileHelper
 from scripts.api.commands.interfaces.executable_builder import build_script
 
 from rest_framework import generics
-from rest_framework.permissions import *
+from rest_framework.permissions import (
+    IsAuthenticated
+)
 
 
 class CreateCommands(generics.CreateAPIView):

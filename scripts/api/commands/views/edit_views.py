@@ -4,7 +4,9 @@ from scripts.models import BaseCommand
 from scripts.api.commands.interfaces.web_socket import notify
 
 from rest_framework import generics, status
-from rest_framework.permissions import *
+from rest_framework.permissions import (
+    AllowAny
+)
 from rest_framework.response import Response
 
 

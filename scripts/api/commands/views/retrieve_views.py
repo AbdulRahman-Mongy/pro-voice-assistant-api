@@ -1,9 +1,13 @@
 from scripts.api.commands.serializers import BaseCommandSerializer
-from scripts.models import *
+from scripts.models import (
+    BaseCommand
+)
 from django.db.models import Q
 
 from rest_framework import generics, filters
-from rest_framework.permissions import *
+from rest_framework.permissions import (
+    AllowAny
+)
 
 
 class ListCommands(generics.ListAPIView):
