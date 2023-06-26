@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from scripts.models import *
+from scripts.models import (
+    BaseCommand,
+    BaseScript,
+    Patterns,
+    Parameters
+)
 
 
 class CommandScriptSerializer(serializers.ModelSerializer):
