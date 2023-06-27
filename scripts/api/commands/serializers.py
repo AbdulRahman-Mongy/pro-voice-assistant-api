@@ -47,6 +47,23 @@ class BaseCommandSerializer(serializers.ModelSerializer):
         )
 
 
+class BaseCommandDetailSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField()
+    patterns = PatternsSerializer(many=True, required=False, source='patterns_set')
+    parameters = ParametersSerializer(many=True, required=False, source='parameters_set')
+
+    class Meta:
+        model = BaseCommand
+        fields = (
+            "id",
+            "name",
+            "description",
+            "patterns",
+            "parameters",
+            "state"
+        )
+
+
 class BaseCommandCopySerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     patterns = PatternsSerializer(many=True, required=False)
