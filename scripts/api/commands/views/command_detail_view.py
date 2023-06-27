@@ -26,5 +26,6 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         # TODO: require retrain: patterns, parameters
         # TODO : update fields in the db
         # TODO: Note: when updating patterns or parameters, remove all existing patterns and parameters and put the new
-        # TODO: when updating script_data -> don't forget to remove the old files before saving the new infos
+        # TODO: Note: when updating script_data -> don't forget to remove the old files before saving the new infos
+        # TODO: Note: when state change to public submit a review request and set is_reviewed to pending
         return Response(status=status.HTTP_200_OK)
