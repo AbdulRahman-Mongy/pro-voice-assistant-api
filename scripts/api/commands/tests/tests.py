@@ -27,7 +27,7 @@ from scripts.models import (
 )
 
 
-@patch('scripts.api.commands.views.create_views.build_script', mock_builder)
+@patch('scripts.api.commands.views.commands_view.build_script', mock_builder)
 class TestCommandsOperations(APITestCase):
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
