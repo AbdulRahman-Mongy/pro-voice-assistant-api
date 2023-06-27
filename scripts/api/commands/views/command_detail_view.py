@@ -28,4 +28,6 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         # TODO: Note: when updating patterns or parameters, remove all existing patterns and parameters and put the new
         # TODO: Note: when updating script_data -> don't forget to remove the old files before saving the new infos
         # TODO: Note: when state change to public submit a review request and set is_reviewed to pending
+        # TODO: when calling the builder to rebuild just add "old_executable_link" with the link and it will
+        #  delete the executable, before building a new one
         return Response(status=status.HTTP_200_OK)
