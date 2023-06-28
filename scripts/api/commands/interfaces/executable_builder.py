@@ -9,7 +9,7 @@ def build_script(command_id, command_name, files):
     response = requests.post(BuilderTest,
                              data={'command_id': command_id, 'command_name': command_name},
                              files={
-                                 'script': script.file or files['script'],
-                                 'requirements': script.dependency or files['requirements']
+                                 'script': script.file.url or files['script'],
+                                 'requirements': script.dependency.url or files['requirements']
                              })
     return response
