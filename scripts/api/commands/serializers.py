@@ -51,6 +51,10 @@ class BaseCommandDetailSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     patterns = PatternsSerializer(many=True, required=False, source='patterns_set')
     parameters = ParametersSerializer(many=True, required=False, source='parameters_set')
+    name = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    state = serializers.CharField(required=False)
+    script_data = CommandScriptSerializer(many=False, required=False)
 
     class Meta:
         model = BaseCommand
@@ -60,7 +64,8 @@ class BaseCommandDetailSerializer(serializers.ModelSerializer):
             "description",
             "patterns",
             "parameters",
-            "state"
+            "state",
+            'script_data'
         )
 
 

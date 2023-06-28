@@ -12,6 +12,8 @@ def get_related_objects(relation_name, data):
 
 
 def assign_related_objects(command_id, cls, data_list):
+    # TODO: delete all before assigning
+    cls.objects.filter(command=command_id).delete()
     for element in data_list:
         values = json.loads(element)
         cls.objects.create(**values, command=command_id)
