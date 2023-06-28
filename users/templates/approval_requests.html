@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Approval Requests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        td a {
+            color: #337ab7;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
+
+        form {
+            display: inline-block;
+        }
+
+        select {
+            padding: 5px;
+        }
+
+        button[type="submit"] {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<h1>Approval Requests</h1>
+
+<table>
+    <tr>
+        <th>Command</th>
+        <th>Parameters</th>
+        <th>Script</th>
+        <th>Dependency</th>
+        <th>Update Status</th>
+    </tr>
+    {% for request in requests %}
+        <tr>
+            <td>{{ request.command.name }}</td>
+            <td>
+                {% for parameter in request.command.parameters_set.all %}
+                    {{ parameter.name }} ({{ parameter.type }})<br>
+                {% endfor %}
+            </td>
+            <td><a href="{{ request.command.script.file.url }}" download>Download Script</a></td>
+            <td><a href="{{ request.command.script.dependency.url }}" download>Download Dependency</a></td>
+            <td>
+                <form method="POST" action="{% url 'approval_requests' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="request_id" value="{{ request.id }}">
+                    <select name="new_status">
+                        <option value="pending" {% if request.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if request.status == 'approved' %}selected{% endif %}>Approved
+                        </option>
+                        <option value="rejected" {% if request.status == 'rejected' %}selected{% endif %}>Rejected
+                        </option>
+                    </select>
+                    <button type="submit">Update</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+</body>
+</html>

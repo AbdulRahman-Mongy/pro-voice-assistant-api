@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from scripts.api.commands.interfaces import build_script
 from scripts.api.commands.serializers import BaseCommandSerializer
-from scripts.api.commands.utils import get_related_objects, assign_related_objects
+from scripts.api.commands.utils import get_related_objects, assign_related_objects, handle_command_state, \
+    submit_approval_request
 from scripts.models import BaseCommand, BaseScript, Patterns, Parameters
 from scripts.utils import FileHelper
 
@@ -26,8 +27,11 @@ class Commands(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         parameters, patterns = self._preprocess_request(request)
+        is_public = handle_command_state(request)
         response = super(Commands, self).post(request, *args, **kwargs)
         self._postprocess_request(parameters, patterns)
+        if is_public:
+            submit_approval_request(self.command)
         return response
 
     def perform_create(self, serializer):
