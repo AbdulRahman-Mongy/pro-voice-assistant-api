@@ -1,4 +1,4 @@
-from scripts.api.commands.serializers.command_serializers import BaseCommandCopySerializer
+from scripts.api.commands.serializers import BaseCommandCopySerializer
 from scripts.models import (
     BaseCommand,
     Patterns,

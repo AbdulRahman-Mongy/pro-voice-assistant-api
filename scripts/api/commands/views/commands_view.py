@@ -3,7 +3,7 @@ from rest_framework import generics, filters
 from rest_framework.permissions import IsAuthenticated
 
 from scripts.api.commands.interfaces import build_script
-from scripts.api.commands.serializers.command_serializers import BaseCommandSerializer
+from scripts.api.commands.serializers import BaseCommandSerializer
 from scripts.api.commands.utils import get_related_objects, assign_related_objects, handle_command_state, \
     submit_approval_request
 from scripts.models import BaseCommand, BaseScript, Patterns, Parameters

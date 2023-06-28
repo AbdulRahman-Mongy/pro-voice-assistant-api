@@ -1,6 +1,6 @@
 from rest_framework.generics import ListAPIView
 
-from scripts.api.commands.serializers.CommandForTableSerializer import CommandForTableSerializer
+from scripts.api.commands.serializers import CommandForTableSerializer
 from scripts.models import BaseCommand
 
 

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from scripts.api.commands.serializers.command_serializers import ParametersSerializer, PatternsSerializer
+from scripts.api.commands.serializers import ParametersSerializer, PatternsSerializer
 from scripts.models import BaseCommand
 
 
