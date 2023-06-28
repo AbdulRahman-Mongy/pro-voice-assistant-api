@@ -1,7 +1,7 @@
-from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from scripts.api.commands.serializers import BaseCommandDetailSerializer
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
 from scripts.api.commands.interfaces import build_script
+from scripts.api.commands.serializers.command_serializers import BaseCommandDetailSerializer
 from scripts.utils import FileHelper
 from scripts.api.commands.utils import (
     get_related_objects,
@@ -9,7 +9,6 @@ from scripts.api.commands.utils import (
 )
 from scripts.models import (
     BaseCommand,
-    BaseScript,
     Patterns,
     Parameters
 )

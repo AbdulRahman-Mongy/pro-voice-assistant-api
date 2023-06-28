@@ -1,5 +1,4 @@
-
-from scripts.api.commands.serializers import BaseCommandBuildSerializer
+from scripts.api.commands.serializers.command_serializers import BaseCommandBuildSerializer
 from scripts.models import BaseCommand
 from scripts.api.commands.interfaces.web_socket import notify
 
