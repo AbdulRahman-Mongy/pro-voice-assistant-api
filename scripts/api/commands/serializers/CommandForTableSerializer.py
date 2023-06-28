@@ -4,7 +4,7 @@ from scripts.api.commands.serializers.command_serializers import ParametersSeria
 from scripts.models import BaseCommand
 
 
-class CommandForTableDTOSerializer(serializers.ModelSerializer):
+class CommandForTableSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     description = serializers.CharField(required=False)

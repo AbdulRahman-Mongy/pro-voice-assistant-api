@@ -1,11 +1,11 @@
 from rest_framework.generics import ListAPIView
 
-from scripts.api.commands.serializers.CommandForTableDTOSerializer import CommandForTableDTOSerializer
+from scripts.api.commands.serializers.CommandForTableSerializer import CommandForTableSerializer
 from scripts.models import BaseCommand
 
 
 class UserCommands(ListAPIView):
-    serializer_class = CommandForTableDTOSerializer
+    serializer_class = CommandForTableSerializer
     pagination_class = None
 
     def get_queryset(self):
