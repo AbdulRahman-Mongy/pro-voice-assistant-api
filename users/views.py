@@ -1,9 +1,12 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 
+from scripts.models import CommandApproveRequest
 from . import models
 from . import serializers
 
@@ -11,6 +14,23 @@ from . import serializers
 class UserListView(generics.ListAPIView):
     queryset = models.CustomUser.objects.all()
     serializer_class = serializers.UserSerializer
+
+
+@staff_member_required
+def approval_requests(request):
+    requests = CommandApproveRequest.objects.filter(status='pending')
+
+    if request.method == 'POST':
+        request_id = request.POST.get('request_id')
+        new_status = request.POST.get('new_status')
+
+        approval_request = get_object_or_404(CommandApproveRequest, id=request_id)
+        approval_request.status = new_status
+        approval_request.save()
+
+        return redirect('approval_requests')
+
+    return render(request, 'approval_requests.html', {'requests': requests})
 
 
 # TODO: remove after integration
