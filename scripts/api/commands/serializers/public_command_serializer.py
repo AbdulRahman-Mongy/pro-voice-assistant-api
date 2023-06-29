@@ -35,11 +35,13 @@ class PublicCommandSerializer(serializers.ModelSerializer):
 
 class InstallationCommandSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
+    name = serializers.CharField()
     executable_url = serializers.CharField(required=False)
 
     class Meta:
         model = BaseCommand
         fields = (
             'id',
+            'name',
             'executable_url'
         )
