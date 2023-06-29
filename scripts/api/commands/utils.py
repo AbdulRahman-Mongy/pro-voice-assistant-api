@@ -3,11 +3,12 @@ import json
 from scripts.models import CommandApproveRequest
 
 
-def get_related_objects(relation_name, data):
+def get_related_objects(relation_name, data, edit=False):
     related_list = [data[k] for k in data if k.startswith(relation_name)]
     to_remove = [k for k in data if k.startswith(relation_name)]
     for k in to_remove:
-        data.pop(k)
+        if not edit:
+            data.pop(k)
     return related_list
 
 
@@ -31,3 +32,31 @@ def handle_command_state(request):
     public = request.data.pop('state', ['private'])[0].lower() == 'public'
     request.data['state'] = 'private'
     return public
+
+
+def _preprocess_edit_request(request):
+    script_data = parameters = patterns = None
+
+    if request.data.get('script_dataX.script') is not None:
+        script_data = {
+            "script_file": request.data.get('script_dataX.script'),
+            "dependency_file": request.data.get('script_dataX.requirements'),
+            "script_type": request.data.get('script_dataX.scriptType')
+        }
+
+    if request.data.get('parametersX[0]') is not None:
+        parameters = get_related_objects('parametersX', request.data, True)
+
+    if request.data.get('patternsX[0]') is not None:
+        patterns = get_related_objects('patternsX', request.data, True)
+
+    return script_data, parameters, patterns
+
+
+def _should_rebuild(script_data):
+    return script_data is not None
+
+
+def _should_retrain(parameters, patterns):
+    required_for_retrain = [parameters, patterns]
+    return any(required_for_retrain)
