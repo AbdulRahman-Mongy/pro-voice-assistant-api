@@ -1,12 +1,12 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 
-from scripts.models import CommandApproveRequest
+from scripts.models import CommandApproveRequest, BaseScript
 from . import models
 from . import serializers
 
@@ -14,6 +14,15 @@ from . import serializers
 class UserListView(generics.ListAPIView):
     queryset = models.CustomUser.objects.all()
     serializer_class = serializers.UserSerializer
+
+
+@staff_member_required
+def download_file(request, script_id, filename):
+    script = get_object_or_404(BaseScript, id=script_id)
+    file = getattr(script, filename)
+    response = FileResponse(file)
+    response['Content-Disposition'] = f'attachment; filename="{file.name}"'
+    return response
 
 
 @staff_member_required

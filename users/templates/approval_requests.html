@@ -84,8 +84,9 @@
                     {{ parameter.name }} ({{ parameter.type }})<br>
                 {% endfor %}
             </td>
-            <td><a href="{{ request.command.script.file.url }}" download>Download Script</a></td>
-            <td><a href="{{ request.command.script.dependency.url }}" download>Download Dependency</a></td>
+
+            <td><a href="{% url 'download_file' script_id=request.command.script.id filename='file' %}">Download Script</a></td>
+            <td><a href="{% url 'download_file' script_id=request.command.script.id filename='dependency' %}">Download Dependency</a></td>
             <td>
                 <form method="POST" action="{% url 'approval_requests' %}">
                     {% csrf_token %}
