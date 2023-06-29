@@ -34,7 +34,6 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         parameters, patterns = self._preprocess_request(request)
-        print(self.rebuild, self.retrain)
         self.update_script() if self.rebuild else None
         response = self.update(request, *args, **kwargs)
         self._postprocess_request(parameters, patterns)
