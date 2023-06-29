@@ -13,6 +13,6 @@ class InstallCommand(generics.RetrieveUpdateAPIView):
     def get_object(self):
         queryset = self.get_queryset()
         user = self.request.user
-        command = generics.get_object_or_404(queryset, id=self.kwargs['pk'])
+        command = generics.get_object_or_404(queryset, id=self.kwargs['pk'], state='public')
         command.used_by.add(user)
         return command
