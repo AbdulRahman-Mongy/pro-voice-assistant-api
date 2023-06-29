@@ -29,4 +29,4 @@ def submit_approval_request(command):
 
 def handle_command_state(request):
     request.data['state'] = 'private'
-    return request.data.pop('visibility', ['private'])[0].lower() == 'public'
+    return request.data.pop('state', ['private'])[0].lower() == 'public'

@@ -5,7 +5,9 @@ from scripts.api.commands.serializers import BaseCommandDetailSerializer
 from scripts.utils import FileHelper
 from scripts.api.commands.utils import (
     get_related_objects,
-    assign_related_objects
+    assign_related_objects,
+    handle_command_state,
+    submit_approval_request
 )
 from scripts.models import (
     BaseCommand,
@@ -21,7 +23,7 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
     queryset = BaseCommand.objects.all()
 
     command = script_file = dependency_file = script_type = None
-    rebuild = retrain = False
+    rebuild = retrain = is_public = False
 
     def get_object(self):
         queryset = self.get_queryset()
@@ -45,8 +47,7 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         parameters, patterns = self._preprocess_request(request)
-        if self.rebuild:
-            self.update_script()
+        self.update_script() if self.rebuild else None
         response = self.update(request, *args, **kwargs)
         self._postprocess_request(parameters, patterns)
         return response
@@ -64,6 +65,8 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         self._rebuild(parameters)
         self._retrain(parameters, patterns)
 
+        self.is_public = self.command.state == 'private' and handle_command_state(request)
+
         return parameters, patterns
 
     def _rebuild(self, parameters):
@@ -75,15 +78,13 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         self.retrain = any(required_for_retrain)
 
     def _postprocess_request(self, parameters, patterns):
-        if patterns:
-            assign_related_objects(self.command, Patterns, patterns)
-        if parameters:
-            assign_related_objects(self.command, Parameters, parameters)
-        if self.rebuild:
-            build_script(self.command.id, self.command.name, {
-                'script': self.script_file,
-                'requirements': self.dependency_file
-            })
+        assign_related_objects(self.command, Patterns, patterns) if patterns else None
+        assign_related_objects(self.command, Parameters, parameters) if parameters else None
+        build_script(self.command.id, self.command.name, {
+            'script': self.script_file,
+            'requirements': self.dependency_file
+        }) if self.rebuild else None
+        submit_approval_request(self.command) if self.is_public else None
         if self.retrain:
             # TODO: update when training
             pass
