@@ -11,4 +11,5 @@ class PublicCommands(ListAPIView):
     def get_queryset(self):
         # all public commands except the ones that the user own or used
         return BaseCommand.objects.filter(state='public')\
-            .exclude(owner=self.request.user).exclude(used_by=self.request.user)
+            .exclude(owner=self.request.user)\
+            .exclude(used_by=self.request.user)

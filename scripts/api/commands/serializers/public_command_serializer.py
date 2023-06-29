@@ -31,3 +31,15 @@ class PublicCommandSerializer(serializers.ModelSerializer):
         if obj.icon:
             return self.context['request'].build_absolute_uri(obj.icon.url)
         return ''
+
+
+class InstallationCommandSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    executable_url = serializers.CharField(required=False)
+
+    class Meta:
+        model = BaseCommand
+        fields = (
+            'id',
+            'executable_url'
+        )
