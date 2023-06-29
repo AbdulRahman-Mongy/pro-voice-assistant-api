@@ -31,29 +31,16 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         command = generics.get_object_or_404(queryset, id=self.kwargs['pk'], owner=user)
         self.check_object_permissions(self.request, command)
         return command
-    #
-    # def partial_update(self, request, *args, **kwargs):
-    #     # loop over request.data and the field
-    #     print(request.data.keys())
-    #     # TODO: require rebuild: parameters, script_data
-    #     # TODO: require retrain: patterns, parameters
-    #     # TODO : update fields in the db
-    #     # TODO: Note: when updating patterns or parameters, remove all existing patterns and parameters and put the new
-    #     # TODO: Note: when updating script_data -> don't forget to remove the old files before saving the new infos
-    #     # TODO: Note: when state change to public submit a review request and set is_reviewed to pending
-    #     # TODO: when calling the builder to rebuild just add "old_executable_link" with the link and it will
-    #     #  delete the executable, before building a new one
-    #     return Response(status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
         parameters, patterns = self._preprocess_request(request)
+        print(self.rebuild, self.retrain)
         self.update_script() if self.rebuild else None
         response = self.update(request, *args, **kwargs)
         self._postprocess_request(parameters, patterns)
         return response
 
     def _preprocess_request(self, request):
-
         self.command = self.get_object()
         self.script_file = request.data.pop('script_data.script', [self.command.script.file])[0]
         self.dependency_file = request.data.pop('script_data.requirements', [self.command.script.dependency])[0]
@@ -62,15 +49,15 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         patterns = get_related_objects('patterns', request.data)
         parameters = get_related_objects('parameters', request.data)
 
-        self._rebuild(parameters)
+        self._rebuild()
         self._retrain(parameters, patterns)
 
         self.is_public = self.command.state == 'private' and handle_command_state(request)
 
         return parameters, patterns
 
-    def _rebuild(self, parameters):
-        required_for_rebuild = [self.script_type, self.dependency_file, self.script_file, parameters]
+    def _rebuild(self):
+        required_for_rebuild = [self.script_type, self.dependency_file, self.script_file]
         self.rebuild = any(required_for_rebuild)
 
     def _retrain(self, parameters, patterns):
@@ -82,7 +69,8 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         assign_related_objects(self.command, Parameters, parameters) if parameters else None
         build_script(self.command.id, self.command.name, {
             'script': self.script_file,
-            'requirements': self.dependency_file
+            'requirements': self.dependency_file,
+            'old_executable_link': self.command.executable_url
         }) if self.rebuild else None
         submit_approval_request(self.command) if self.is_public else None
         if self.retrain:
