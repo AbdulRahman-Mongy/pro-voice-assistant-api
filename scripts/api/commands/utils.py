@@ -60,3 +60,12 @@ def _should_rebuild(script_data):
 def _should_retrain(parameters, patterns):
     required_for_retrain = [parameters, patterns]
     return any(required_for_retrain)
+
+
+def _prepare_script_data(script_data):
+    return {
+        'file': script_data["script_file"],
+        'dependency': script_data["dependency_file"],
+        'type': script_data["script_type"],
+        'name': script_data["script_file"].name
+    }
