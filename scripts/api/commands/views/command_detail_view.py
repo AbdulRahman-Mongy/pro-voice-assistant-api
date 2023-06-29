@@ -4,22 +4,13 @@ from scripts.api.commands.interfaces import build_script
 from scripts.api.commands.serializers import BaseCommandDetailSerializer
 from scripts.utils import FileHelper
 from scripts.api.commands.utils import (
-    assign_related_objects, _preprocess_edit_request, _should_rebuild, _should_retrain,
+    assign_related_objects, _preprocess_edit_request, _should_rebuild, _should_retrain, _prepare_script_data,
 )
 from scripts.models import (
     BaseCommand,
     Patterns,
     Parameters, CommandApproveRequest
 )
-
-
-def _prepare_script_data(script_data):
-    return {
-        'file': script_data["script_file"],
-        'dependency': script_data["dependency_file"],
-        'type': script_data["script_type"],
-        'name': script_data["script_file"].name
-    }
 
 
 class CommandDetail(generics.RetrieveUpdateAPIView):
