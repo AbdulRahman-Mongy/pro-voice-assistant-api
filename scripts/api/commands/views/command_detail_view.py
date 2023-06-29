@@ -12,18 +12,54 @@ from scripts.api.commands.utils import (
 from scripts.models import (
     BaseCommand,
     Patterns,
-    Parameters
+    Parameters, CommandApproveRequest
 )
 
 
 # View
+def _preprocess_request(request):
+    script_data = parameters = patterns = None
+
+    if request.data.get('script_data') is not None:
+        script_data = {
+            "script_file": request.data.get('script_data.scriptFile')[0],
+            "dependency_file": request.data.get('script_data.requirements')[0],
+            "script_type": request.data.get('script_data.scriptType')[0]
+        }
+
+    if request.data.get('parameters') is not None:
+        parameters = get_related_objects('parameters', request.data)
+
+    if request.data.get('patterns') is not None:
+        patterns = get_related_objects('patterns', request.data)
+
+    return script_data, parameters, patterns
+
+
+def _should_rebuild(script_data):
+    return script_data is not None
+
+
+def _should_retrain(parameters, patterns):
+    required_for_retrain = [parameters, patterns]
+    return any(required_for_retrain)
+
+
+def _prepare_script_data(script_data):
+    return {
+        'file': script_data.script_file,
+        'dependency': script_data.dependency_file,
+        'type': script_data.script_type,
+        'name': script_data.script_file.name
+    }
+
+
 class CommandDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [AllowAny]
     serializer_class = BaseCommandDetailSerializer
     queryset = BaseCommand.objects.all()
 
-    command = script_file = dependency_file = script_type = None
-    rebuild = retrain = is_public = False
+    command = None
 
     def get_object(self):
         queryset = self.get_queryset()
@@ -33,61 +69,55 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         return command
 
     def put(self, request, *args, **kwargs):
-        parameters, patterns = self._preprocess_request(request)
-        self.update_script() if self.rebuild else None
-        response = self.update(request, *args, **kwargs)
-        self._postprocess_request(parameters, patterns)
-        return response
-
-    def _preprocess_request(self, request):
         self.command = self.get_object()
-        self.script_file = request.data.pop('script_data.script', [self.command.script.file])[0]
-        self.dependency_file = request.data.pop('script_data.requirements', [self.command.script.dependency])[0]
-        self.script_type = request.data.pop('script_data.scriptType', [self.command.script.type])[0]
+        script_data, parameters, patterns = _preprocess_request(request)
 
-        patterns = get_related_objects('patterns', request.data)
-        parameters = get_related_objects('parameters', request.data)
+        _should_retrain(parameters, patterns)
+        is_public = request.data.get('state', ['private'])[0].lower() == 'public'
 
-        self._rebuild()
-        self._retrain(parameters, patterns)
+        # update command
+        response = self.update(request, *args, **kwargs)
 
-        self.is_public = self.command.state == 'private' and handle_command_state(request)
+        if is_public:
+            self.command.state = 'private'
+            self.command.save()
+            CommandApproveRequest.objects.filter(command=self.command).delete()
+            CommandApproveRequest.objects.create(
+                command=self.command,
+                status='pending',
+            )
 
-        return parameters, patterns
+        if _should_rebuild(script_data):
+            self.update_script_files(script_data)
 
-    def _rebuild(self):
-        required_for_rebuild = [self.script_type, self.dependency_file, self.script_file]
-        self.rebuild = any(required_for_rebuild)
-
-    def _retrain(self, parameters, patterns):
-        required_for_retrain = [parameters, patterns]
-        self.retrain = any(required_for_retrain)
-
-    def _postprocess_request(self, parameters, patterns):
-        assign_related_objects(self.command, Patterns, patterns) if patterns else None
-        assign_related_objects(self.command, Parameters, parameters) if parameters else None
-        build_script(self.command.id, self.command.name, {
-            'script': self.script_file,
-            'requirements': self.dependency_file,
-            'old_executable_link': self.command.executable_url
-        }) if self.rebuild else None
-        submit_approval_request(self.command) if self.is_public else None
-        if self.retrain:
-            # TODO: update when training
+        if _should_retrain(parameters, patterns):
+            # TODO: retrain
             pass
 
-    def _prepare_script_data(self):
-        return {
-            'file': self.script_file,
-            'dependency': self.dependency_file,
-            'type': self.script_type,
-            'name': self.script_file.name
-        }
+        if request.data.get('icon') is not None:
+            self.update_icon_file(request.data.get('icon')[0])
 
-    def update_script(self):
-        script_data = self._prepare_script_data()
+        self._postprocess_request(script_data, parameters, patterns)
+        return response
+
+    def _postprocess_request(self, script_data, parameters, patterns):
+        assign_related_objects(self.command, Patterns, patterns) if patterns else None
+        assign_related_objects(self.command, Parameters, parameters) if parameters else None
+
+        build_script(self.command.id, self.command.name, {
+            'script': script_data.script_file,
+            'requirements': script_data.dependency_file,
+            'old_executable_link': self.command.executable_url
+        }) if script_data else None
+
+    def update_script_files(self, script_data):
         FileHelper.remove_files([self.command.script.file, self.command.script.dependency])
         # update method does not call file upload so I had to do it like that
-        for attribute, value in script_data.items():
+        for attribute, value in _prepare_script_data(script_data).items():
             setattr(self.command.script, attribute, value)
         self.command.script.save()
+
+    def update_icon_file(self, icon_file):
+        FileHelper.remove_files([self.command.icon])
+        self.command.icon = icon_file
+        self.command.save()
