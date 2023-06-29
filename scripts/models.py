@@ -28,6 +28,7 @@ class BaseCommand(models.Model):
         default='private',
     )
     icon = models.ImageField(upload_to='images/', default='images/default_icon.jpg')
+    used_by = models.ManyToManyField(CustomUser, related_name='used_by')
 
     def __str__(self):
         return self.name
@@ -76,3 +77,4 @@ class CommandApproveRequest(models.Model):
             self.command.save()
 
         super().save(*args, **kwargs)
+
