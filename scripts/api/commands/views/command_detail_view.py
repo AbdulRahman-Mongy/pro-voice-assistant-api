@@ -4,26 +4,21 @@ from scripts.api.commands.interfaces import build_script
 from scripts.api.commands.serializers import BaseCommandDetailSerializer
 from scripts.utils import FileHelper
 from scripts.api.commands.utils import (
-    get_related_objects,
-    assign_related_objects,
-    handle_command_state,
-    submit_approval_request
+    assign_related_objects, _preprocess_edit_request, _should_rebuild, _should_retrain, _prepare_script_data,
 )
 from scripts.models import (
     BaseCommand,
     Patterns,
-    Parameters
+    Parameters, CommandApproveRequest
 )
 
 
-# View
 class CommandDetail(generics.RetrieveUpdateAPIView):
     permission_classes = [AllowAny]
     serializer_class = BaseCommandDetailSerializer
     queryset = BaseCommand.objects.all()
 
-    command = script_file = dependency_file = script_type = None
-    rebuild = retrain = is_public = False
+    command = None
 
     def get_object(self):
         queryset = self.get_queryset()
@@ -31,76 +26,71 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         command = generics.get_object_or_404(queryset, id=self.kwargs['pk'], owner=user)
         self.check_object_permissions(self.request, command)
         return command
-    #
-    # def partial_update(self, request, *args, **kwargs):
-    #     # loop over request.data and the field
-    #     print(request.data.keys())
-    #     # TODO: require rebuild: parameters, script_data
-    #     # TODO: require retrain: patterns, parameters
-    #     # TODO : update fields in the db
-    #     # TODO: Note: when updating patterns or parameters, remove all existing patterns and parameters and put the new
-    #     # TODO: Note: when updating script_data -> don't forget to remove the old files before saving the new infos
-    #     # TODO: Note: when state change to public submit a review request and set is_reviewed to pending
-    #     # TODO: when calling the builder to rebuild just add "old_executable_link" with the link and it will
-    #     #  delete the executable, before building a new one
-    #     return Response(status=status.HTTP_200_OK)
 
     def put(self, request, *args, **kwargs):
-        parameters, patterns = self._preprocess_request(request)
-        self.update_script() if self.rebuild else None
-        response = self.update(request, *args, **kwargs)
-        self._postprocess_request(parameters, patterns)
-        return response
-
-    def _preprocess_request(self, request):
-
         self.command = self.get_object()
-        self.script_file = request.data.pop('script_data.script', [self.command.script.file])[0]
-        self.dependency_file = request.data.pop('script_data.requirements', [self.command.script.dependency])[0]
-        self.script_type = request.data.pop('script_data.scriptType', [self.command.script.type])[0]
+        script_data, parameters, patterns = _preprocess_edit_request(request)
 
-        patterns = get_related_objects('patterns', request.data)
-        parameters = get_related_objects('parameters', request.data)
+        response = self.update(request, *args, **kwargs)
 
-        self._rebuild(parameters)
-        self._retrain(parameters, patterns)
+        if self.require_review(request, _should_rebuild(script_data)):
+            self.request_approval()
 
-        self.is_public = self.command.state == 'private' and handle_command_state(request)
+        if _should_rebuild(script_data):
+            self.update_script(script_data)
 
-        return parameters, patterns
-
-    def _rebuild(self, parameters):
-        required_for_rebuild = [self.script_type, self.dependency_file, self.script_file, parameters]
-        self.rebuild = any(required_for_rebuild)
-
-    def _retrain(self, parameters, patterns):
-        required_for_retrain = [parameters, patterns]
-        self.retrain = any(required_for_retrain)
-
-    def _postprocess_request(self, parameters, patterns):
-        assign_related_objects(self.command, Patterns, patterns) if patterns else None
-        assign_related_objects(self.command, Parameters, parameters) if parameters else None
-        build_script(self.command.id, self.command.name, {
-            'script': self.script_file,
-            'requirements': self.dependency_file
-        }) if self.rebuild else None
-        submit_approval_request(self.command) if self.is_public else None
-        if self.retrain:
-            # TODO: update when training
+        if _should_retrain(parameters, patterns):
+            self.update_patterns(patterns)
+            self.update_parameters(parameters)
+            # TODO: retrain
             pass
 
-    def _prepare_script_data(self):
-        return {
-            'file': self.script_file,
-            'dependency': self.dependency_file,
-            'type': self.script_type,
-            'name': self.script_file.name
-        }
+        if request.data.get('icon') is not None:
+            self.update_icon_file(request.data.get('icon'))
 
-    def update_script(self):
-        script_data = self._prepare_script_data()
+        return response
+
+    def request_approval(self):
+        self.command.state = 'private'
+        self.command.save()
+        CommandApproveRequest.objects.filter(command=self.command).delete()
+        CommandApproveRequest.objects.create(
+            command=self.command,
+            status='pending',
+        )
+
+    def require_review(self, request, should_rebuild):
+        if self.command.state == 'public' and should_rebuild:
+            return True
+
+        if request.data.get('state') is not None:
+            return request.data.get('state').lower() == 'public'
+
+        return False
+
+    def update_parameters(self, parameters):
+        assign_related_objects(self.command, Parameters, parameters) if parameters else None
+
+    def update_patterns(self, patterns):
+        assign_related_objects(self.command, Patterns, patterns) if patterns else None
+
+    def update_script(self, script_data):
+        self.update_script_files(script_data)
+
+        build_script(self.command.id, self.command.name, {
+            'script': script_data["script_file"],
+            'requirements': script_data["dependency_file"],
+            'old_executable_link': self.command.executable_url
+        }) if script_data else None
+
+    def update_script_files(self, script_data):
+        # update method does not call file upload, so I had to do it like that
         FileHelper.remove_files([self.command.script.file, self.command.script.dependency])
-        # update method does not call file upload so I had to do it like that
-        for attribute, value in script_data.items():
+        for attribute, value in _prepare_script_data(script_data).items():
             setattr(self.command.script, attribute, value)
         self.command.script.save()
+
+    def update_icon_file(self, icon_file):
+        FileHelper.remove_files([self.command.icon])
+        self.command.icon = icon_file
+        self.command.save()
