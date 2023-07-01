@@ -4,14 +4,14 @@ BuilderTest = 'http://localhost:8001/build/python/'
 DeleteURL = 'http://localhost:8001/executable'
 
 
-def build_script(command_id, command_name, files):
+def build_script(command_id, command_name):
     # TODO: change the url
     script = BaseCommand.objects.get(pk=command_id).script
     response = requests.post(BuilderTest,
                              data={'command_id': command_id, 'command_name': command_name},
                              files={
-                                 'script': script.file or files['script'],
-                                 'requirements': script.dependency or files['requirements']
+                                 'script': script.file,
+                                 'requirements': script.dependency
                              })
     return response
 

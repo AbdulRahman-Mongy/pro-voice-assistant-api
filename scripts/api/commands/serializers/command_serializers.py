@@ -69,25 +69,6 @@ class BaseCommandDetailSerializer(serializers.ModelSerializer):
         )
 
 
-class BaseCommandCopySerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField()
-    patterns = PatternsSerializer(many=True, required=False)
-    parameters = ParametersSerializer(many=True, required=False)
-    script_data = CommandScriptSerializer(many=False, required=False)
-
-    class Meta:
-        model = BaseCommand
-        fields = (
-            "id",
-            "name",
-            "description",
-            "patterns",
-            "parameters",
-            "icon",
-            "script_data",
-        )
-
-
 class BaseCommandBuildSerializer(serializers.ModelSerializer):
 
     id = serializers.CharField(required=False)

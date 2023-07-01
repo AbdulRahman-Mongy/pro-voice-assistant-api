@@ -91,16 +91,27 @@ class TestCommandsOperations(APITestCase):
 
     def test_fork_command(self):
         created_command = BaseCommand.objects.get(pk=create_command(self))
-        created_command.script.state = 'public'
+        created_command.state = 'public'
         created_command.save()
-        commands_before_fork = BaseCommand.objects.all().count()
-        scripts_before_fork = BaseScript.objects.all().count()
+        commands_before_fork = BaseCommand.objects.count()
+        params_before_fork = Parameters.objects.count()
+        scripts_before_fork = BaseScript.objects.count()
         user_id = get_new_user(self, "New_User")
-        response = self.client.get(reverse('fork_commands', kwargs={'id': created_command.id}))
-        commands_after_fork = BaseCommand.objects.all().count()
-        scripts_after_fork = BaseScript.objects.all().count()
+        response = self.client.post(reverse('fork_commands', kwargs={'id': created_command.id}))
+        commands_after_fork = BaseCommand.objects.count()
+        scripts_after_fork = BaseScript.objects.count()
+        params_after_fork = Parameters.objects.count()
+
         self.assertEqual(commands_after_fork, commands_before_fork + 1)
+        self.assertEqual(params_after_fork, params_before_fork + 2)
         self.assertEqual(scripts_after_fork, scripts_before_fork + 1)
+
         forked_command = BaseCommand.objects.get(pk=response.data['id'])
         self.assertEqual(forked_command.owner.id, user_id)
+        self.assertEqual(forked_command.state, 'private')
         self.assertNotEqual(forked_command.owner.id, created_command.owner.id)
+
+        # asserting new file was created with the same content
+        self.assertNotEqual(forked_command.script.file.url, created_command.script.file.url)
+        self.assertEqual(forked_command.script.file.read(), created_command.script.file.read())
+

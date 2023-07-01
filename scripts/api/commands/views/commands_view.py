@@ -52,10 +52,7 @@ class Commands(generics.ListCreateAPIView):
     def _postprocess_request(self, parameters, patterns):
         assign_related_objects(self.command, Patterns, patterns)
         assign_related_objects(self.command, Parameters, parameters)
-        build_script(self.command.id, self.command.name, {
-            'script': self.script_file,
-            'requirements': self.dependency_file
-        })
+        build_script(self.command.id, self.command.name)
 
     def _prepare_script_data(self):
         return {

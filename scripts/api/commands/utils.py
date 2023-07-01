@@ -69,3 +69,11 @@ def _prepare_script_data(script_data):
         'type': script_data["script_type"],
         'name': script_data["script_file"].name
     }
+
+
+def copy_obj(obj, **kwargs):
+    obj.pk = None
+    for att, val in kwargs.items():
+        setattr(obj, att, val)
+    obj.save()
+    return obj
