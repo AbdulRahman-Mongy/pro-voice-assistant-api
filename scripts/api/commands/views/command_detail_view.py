@@ -1,10 +1,18 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
-from scripts.api.commands.interfaces import build_script
+from rest_framework.response import Response
+from scripts.api.commands.interfaces import (
+    build_script,
+    remove_executable
+)
 from scripts.api.commands.serializers import BaseCommandDetailSerializer
 from scripts.utils import FileHelper
 from scripts.api.commands.utils import (
-    assign_related_objects, _preprocess_edit_request, _should_rebuild, _should_retrain, _prepare_script_data,
+    assign_related_objects,
+    _preprocess_edit_request,
+    _should_rebuild,
+    _should_retrain,
+    _prepare_script_data,
 )
 from scripts.models import (
     BaseCommand,
@@ -13,7 +21,7 @@ from scripts.models import (
 )
 
 
-class CommandDetail(generics.RetrieveUpdateAPIView):
+class CommandDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [AllowAny]
     serializer_class = BaseCommandDetailSerializer
     queryset = BaseCommand.objects.all()
@@ -94,3 +102,17 @@ class CommandDetail(generics.RetrieveUpdateAPIView):
         FileHelper.remove_files([self.command.icon])
         self.command.icon = icon_file
         self.command.save()
+
+    def delete(self, request, *args, **kwargs):
+        self.command = self.get_object()
+        self.clean_before_delete()
+        return self.destroy(request, *args, **kwargs)
+
+    def clean_before_delete(self):
+        remove_executable(self.command.executable_url) if self.command.executable_url else None
+        FileHelper.remove_files([
+            self.command.script.file,
+            self.command.script.dependency,
+        ])
+
+
