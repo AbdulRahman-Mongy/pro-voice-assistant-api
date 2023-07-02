@@ -19,7 +19,7 @@ from rest_framework.response import Response
 
 class ForkCommands(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
-    patterns = parameters = script = command = forked_command = None
+    patterns = parameters = script = command = forked_command = icon = None
 
     def get_queryset(self):
         if self.request.user.is_staff:
@@ -40,6 +40,7 @@ class ForkCommands(generics.CreateAPIView):
     def _preprocess_command(self):
         file = FileHelper.copy_file(self.command.script.file)
         dependency = FileHelper.copy_file(self.command.script.dependency)
+        self.icon = FileHelper.copy_file(self.command.icon)
         self.script = copy_obj(self.command.script,
                                owner=self.request.user,
                                file=file,
@@ -51,6 +52,7 @@ class ForkCommands(generics.CreateAPIView):
         self.forked_command = copy_obj(self.command,
                                        owner=self.request.user,
                                        script=self.script,
+                                       icon=self.icon,
                                        state='private')
 
     def _postprocess_command(self):
