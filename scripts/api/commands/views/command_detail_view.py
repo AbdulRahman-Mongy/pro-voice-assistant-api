@@ -85,11 +85,7 @@ class CommandDetail(generics.RetrieveUpdateDestroyAPIView):
     def update_script(self, script_data):
         self.update_script_files(script_data)
 
-        build_script(self.command.id, self.command.name, {
-            'script': script_data["script_file"],
-            'requirements': script_data["dependency_file"],
-            'old_executable_link': self.command.executable_url
-        }) if script_data else None
+        build_script(self.command.id, self.command.name) if script_data else None
 
     def update_script_files(self, script_data):
         # update method does not call file upload, so I had to do it like that
