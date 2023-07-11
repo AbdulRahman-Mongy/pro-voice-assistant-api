@@ -96,13 +96,24 @@ def update_nlp_model(command, method='POST'):
         for Parameter in Parameters.objects.filter(command=command)
     ]
 
+    parameters_mapping = {
+        'date': 'DATE',
+        'location': 'GPE',
+        'number': 'number',
+    }
+    parameters.sort(key=lambda x: x['order'])
+    parameters_names = [parameter['name'] for parameter in parameters]
+    parameters_types = [parameters_mapping[parameter['type']] for parameter in parameters]
+    patterns = [pattern['syntax'] for pattern in patterns]
+
     serialized_command = {
         "user_id": command.owner.id,
         "user_port": command.owner.port,
         'id': command.id,
         'name': command.name,
         'patterns': patterns,
-        'parameters': parameters
+        'parameters_names': parameters_names,
+        'parameters_types': parameters_types
     }
 
     json_data = json.dumps(serialized_command)

@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import serializers
 
 from scripts.api.commands.serializers import ParametersSerializer, PatternsSerializer
@@ -31,15 +32,15 @@ class CommandForTableSerializer(serializers.ModelSerializer):
 
     def get_icon_link(self, obj):
         if obj.icon:
-            return self.context['request'].build_absolute_uri(obj.icon.url)
+            return reverse('download_icon', kwargs={'command_id': obj.id})
         return ''
 
     def get_script_link(self, obj):
         if obj.script:
-            return self.context['request'].build_absolute_uri(obj.script.file.url)
+            return reverse("download_file", kwargs={'script_id': obj.script.id, "filename": 'file'})
         return ''
 
     def get_requirements_link(self, obj):
         if obj.script and obj.script.dependency:
-            return self.context['request'].build_absolute_uri(obj.script.dependency.url)
+            return reverse("download_file", kwargs={'script_id': obj.script.id, "filename": 'dependency'})
         return ''

@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import serializers
 
 from scripts.api.commands.serializers import ParametersSerializer, PatternsSerializer
@@ -29,7 +30,8 @@ class PublicCommandSerializer(serializers.ModelSerializer):
 
     def get_icon_link(self, obj):
         if obj.icon:
-            return self.context['request'].build_absolute_uri(obj.icon.url)
+            # get the absolute url of the icon
+            return reverse('download_icon', kwargs={'command_id': obj.id})
         return ''
 
 
