@@ -22,4 +22,5 @@ urlpatterns = [
     # TODO: remove after integration
     path("test_notifications/", views.TestNotifications.as_view(), name="test_notifications"),
     path("download/<int:script_id>/<str:filename>/", views.download_file, name="download_file"),
+    path("rasa/port/<int:user_id>/", views.RasaPortView.as_view(), name="get_rasa_port"),
 ]

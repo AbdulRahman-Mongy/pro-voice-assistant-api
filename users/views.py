@@ -3,6 +3,7 @@ from channels.layers import get_channel_layer
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views import View
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 
@@ -67,3 +68,11 @@ class TestNotifications(generics.GenericAPIView):
                 'message': notification_data
             }
         )
+
+
+class RasaPortView(View):
+    def get(self, request, user_id):
+        user = get_object_or_404(models.CustomUser, id=user_id)
+        return HttpResponse(status=200,
+                            content=f'{{"port": {user.port}}}',
+                            content_type='application/json')
