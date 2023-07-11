@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from scripts.api.commands.serializers import InstallationCommandSerializer
-from scripts.api.commands.utils import add_command_to_nlp
+from scripts.api.commands.utils import update_nlp_model
 from scripts.models import BaseCommand
 
 
@@ -23,7 +23,7 @@ class InstallCommand(generics.RetrieveAPIView):
         already_installed = BaseCommand.objects.filter(pk=command.id).filter(used_by__id=user.id) or False
         if not already_installed:
             command.used_by.add(user)
-            add_command_to_nlp(command)
+            update_nlp_model(command)
         return self.retrieve(request, *args, **kwargs)
 
 
@@ -42,6 +42,7 @@ class UninstallCommand(generics.DestroyAPIView):
         already_installed = BaseCommand.objects.filter(pk=command.id).filter(used_by__id=user.id) or False
         if already_installed:
             command.used_by.remove(user)
+            update_nlp_model(command, "DELETE")
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST, data={
             'msg': 'This Command is not installed'

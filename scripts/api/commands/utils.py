@@ -81,7 +81,7 @@ def copy_obj(obj, **kwargs):
     return obj
 
 
-def add_command_to_nlp(command):
+def update_nlp_model(command, method='POST'):
     patterns = [{
         'syntax': pattern.syntax,
     }
@@ -97,6 +97,8 @@ def add_command_to_nlp(command):
     ]
 
     serialized_command = {
+        "user_id": command.owner.id,
+        "user_port": command.owner.port,
         'id': command.id,
         'name': command.name,
         'patterns': patterns,
@@ -105,4 +107,10 @@ def add_command_to_nlp(command):
 
     json_data = json.dumps(serialized_command)
     headers = {'Content-Type': 'application/json'}
-    requests.post('http://localhost:8100/train/', json_data, headers=headers)
+
+    if method == 'POST':
+        requests.post('http://localhost:8100/train/', json_data, headers=headers)
+    elif method == 'PUT':
+        requests.put('http://localhost:8100/train/', json_data, headers=headers)
+    elif method == 'DELETE':
+        requests.delete('http://localhost:8100/train/', data=json_data, headers=headers)
