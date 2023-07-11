@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from scripts.api.commands.interfaces import build_script
 from scripts.api.commands.serializers import BaseCommandSerializer
 from scripts.api.commands.utils import get_related_objects, assign_related_objects, handle_command_state, \
-    submit_approval_request
+    submit_approval_request, add_command_to_nlp
 from scripts.models import BaseCommand, BaseScript, Patterns, Parameters
 from scripts.utils import FileHelper
 
@@ -53,6 +53,7 @@ class Commands(generics.ListCreateAPIView):
         assign_related_objects(self.command, Patterns, patterns)
         assign_related_objects(self.command, Parameters, parameters)
         build_script(self.command.id, self.command.name)
+        add_command_to_nlp(self.command)
 
     def _prepare_script_data(self):
         return {

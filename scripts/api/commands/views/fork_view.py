@@ -4,7 +4,7 @@ from scripts.models import (
     Parameters
 )
 from scripts.api.commands.utils import (
-    copy_obj
+    copy_obj, add_command_to_nlp
 )
 from scripts.utils import FileHelper
 from scripts.api.commands.interfaces import (
@@ -61,3 +61,4 @@ class ForkCommands(generics.CreateAPIView):
         for parameter in self.parameters:
             copy_obj(parameter, command=self.forked_command)
         build_script(self.forked_command.id, self.forked_command.name)
+        add_command_to_nlp(self.forked_command)

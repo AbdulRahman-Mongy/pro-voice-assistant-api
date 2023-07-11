@@ -1,6 +1,8 @@
 import json
 
-from scripts.models import CommandApproveRequest
+import requests
+
+from scripts.models import CommandApproveRequest, Patterns, Parameters
 
 
 def get_related_objects(relation_name, data, edit=False):
@@ -77,3 +79,30 @@ def copy_obj(obj, **kwargs):
         setattr(obj, att, val)
     obj.save()
     return obj
+
+
+def add_command_to_nlp(command):
+    patterns = [{
+        'syntax': pattern.syntax,
+    }
+        for pattern in Patterns.objects.filter(command=command)
+    ]
+
+    parameters = [{
+        'name': Parameter.name,
+        'type': Parameter.type,
+        'order': Parameter.order,
+    }
+        for Parameter in Parameters.objects.filter(command=command)
+    ]
+
+    serialized_command = {
+        'id': command.id,
+        'name': command.name,
+        'patterns': patterns,
+        'parameters': parameters
+    }
+
+    json_data = json.dumps(serialized_command)
+    headers = {'Content-Type': 'application/json'}
+    requests.post('http://localhost:8100/train/', json_data, headers=headers)

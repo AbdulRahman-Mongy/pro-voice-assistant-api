@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from scripts.api.commands.serializers import InstallationCommandSerializer
+from scripts.api.commands.utils import add_command_to_nlp
 from scripts.models import BaseCommand
 
 
@@ -22,11 +23,11 @@ class InstallCommand(generics.RetrieveAPIView):
         already_installed = BaseCommand.objects.filter(pk=command.id).filter(used_by__id=user.id) or False
         if not already_installed:
             command.used_by.add(user)
+            add_command_to_nlp(command)
         return self.retrieve(request, *args, **kwargs)
 
 
 class UninstallCommand(generics.DestroyAPIView):
-
     permission_classes = [IsAuthenticated]
     queryset = BaseCommand.objects.all()
 
