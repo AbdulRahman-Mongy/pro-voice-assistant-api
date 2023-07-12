@@ -121,8 +121,8 @@ def update_nlp_model(command, method='POST'):
     headers = {'Content-Type': 'application/json'}
 
     if method == 'POST':
-        requests.post('http://localhost:8100/train/', json_data, headers=headers)
+        requests.post('http://localhost:8002/train/', json_data, headers=headers)
     elif method == 'PUT':
-        requests.put('http://localhost:8100/train/', json_data, headers=headers)
+        requests.put('http://localhost:8002/train/', json_data, headers=headers)
     elif method == 'DELETE':
-        requests.delete('http://localhost:8100/train/', data=json_data, headers=headers)
+        requests.delete('http://localhost:8002/train/', data=json_data, headers=headers)

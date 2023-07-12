@@ -18,7 +18,7 @@ class CustomUser(AbstractUser):
             self.port = 8100
 
         # send to nlp manger to create the user
-        requests.post('http://localhost:8100/user/', json={
+        requests.post('http://localhost:8002/user/', json={
             'user_id': self.id,
         })
 
