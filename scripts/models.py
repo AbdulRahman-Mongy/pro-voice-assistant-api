@@ -1,4 +1,7 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.db import models
+
 from users.models import CustomUser
 
 
@@ -72,9 +75,21 @@ class CommandApproveRequest(models.Model):
         if self.status == 'approved':
             self.command.state = 'public'
             self.command.save()
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'notification_{self.command.owner.id}',
+                {'type': 'send_notification',
+                 'message': {
+                     "type": "approved",
+                     "id": self.command.id,
+                     "name": "",
+                     "message": "",
+                     "status": ""}
+                 }
+            )
         else:
             self.command.state = 'private'
             self.command.save()
 
         super().save(*args, **kwargs)
-

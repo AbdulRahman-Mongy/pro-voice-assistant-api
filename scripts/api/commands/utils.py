@@ -100,6 +100,7 @@ def update_nlp_model(command, method='POST'):
         'date': 'DATE',
         'location': 'GPE',
         'number': 'number',
+        'phrase': 'phrase',
     }
     parameters.sort(key=lambda x: x['order'])
     parameters_names = [parameter['name'] for parameter in parameters]

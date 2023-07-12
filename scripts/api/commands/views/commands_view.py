@@ -52,7 +52,7 @@ class Commands(generics.ListCreateAPIView):
     def _postprocess_request(self, parameters, patterns):
         assign_related_objects(self.command, Patterns, patterns)
         assign_related_objects(self.command, Parameters, parameters)
-        # build_script(self.command.id, self.command.name)
+        build_script(self.command.id, self.command.name)
         update_nlp_model(self.command)
 
     def _prepare_script_data(self):
