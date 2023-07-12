@@ -1,6 +1,8 @@
 import json
 
-from scripts.models import CommandApproveRequest
+import requests
+
+from scripts.models import CommandApproveRequest, Patterns, Parameters
 
 
 def get_related_objects(relation_name, data, edit=False):
@@ -77,3 +79,49 @@ def copy_obj(obj, **kwargs):
         setattr(obj, att, val)
     obj.save()
     return obj
+
+
+def update_nlp_model(command, method='POST'):
+    patterns = [{
+        'syntax': pattern.syntax,
+    }
+        for pattern in Patterns.objects.filter(command=command)
+    ]
+
+    parameters = [{
+        'name': Parameter.name,
+        'type': Parameter.type,
+        'order': Parameter.order,
+    }
+        for Parameter in Parameters.objects.filter(command=command)
+    ]
+
+    parameters_mapping = {
+        'date': 'DATE',
+        'location': 'GPE',
+        'number': 'number',
+    }
+    parameters.sort(key=lambda x: x['order'])
+    parameters_names = [parameter['name'] for parameter in parameters]
+    parameters_types = [parameters_mapping[parameter['type']] for parameter in parameters]
+    patterns = [pattern['syntax'] for pattern in patterns]
+
+    serialized_command = {
+        "user_id": command.owner.id,
+        "user_port": command.owner.port,
+        'id': command.id,
+        'name': command.name,
+        'patterns': patterns,
+        'parameters_names': parameters_names,
+        'parameters_types': parameters_types
+    }
+
+    json_data = json.dumps(serialized_command)
+    headers = {'Content-Type': 'application/json'}
+
+    if method == 'POST':
+        requests.post('http://localhost:8100/train/', json_data, headers=headers)
+    elif method == 'PUT':
+        requests.put('http://localhost:8100/train/', json_data, headers=headers)
+    elif method == 'DELETE':
+        requests.delete('http://localhost:8100/train/', data=json_data, headers=headers)

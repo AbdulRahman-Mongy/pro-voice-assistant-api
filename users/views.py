@@ -3,10 +3,11 @@ from channels.layers import get_channel_layer
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views import View
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 
-from scripts.models import CommandApproveRequest, BaseScript
+from scripts.models import CommandApproveRequest, BaseScript, BaseCommand
 from . import models
 from . import serializers
 
@@ -16,10 +17,17 @@ class UserListView(generics.ListAPIView):
     serializer_class = serializers.UserSerializer
 
 
-@staff_member_required
 def download_file(request, script_id, filename):
     script = get_object_or_404(BaseScript, id=script_id)
     file = getattr(script, filename)
+    response = FileResponse(file)
+    response['Content-Disposition'] = f'attachment; filename="{file.name}"'
+    return response
+
+
+def download_icon(request, command_id):
+    command = get_object_or_404(BaseCommand, id=command_id)
+    file = command.icon
     response = FileResponse(file)
     response['Content-Disposition'] = f'attachment; filename="{file.name}"'
     return response
@@ -47,7 +55,7 @@ class TestNotifications(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
-        self.create_notification(2, "This is a test notification")
+        self.create_notification(17, "This is a test notification")
         return HttpResponse("Notification sent")
 
     def create_notification(self, user_id, message):
@@ -61,9 +69,17 @@ class TestNotifications(generics.GenericAPIView):
         print(f"Sending notification to user {user_id}")
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            f'notification_{user_id}',
+            f'notification_rasa_{user_id}',
             {
-                'type': 'send_notification',
+                'type': 'send_rasa_notification',
                 'message': notification_data
             }
         )
+
+
+class RasaPortView(View):
+    def get(self, request, user_id):
+        user = get_object_or_404(models.CustomUser, id=user_id)
+        return HttpResponse(status=200,
+                            content=f'{{"port": {user.port}}}',
+                            content_type='application/json')

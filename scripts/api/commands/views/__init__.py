@@ -6,3 +6,4 @@ from .user_commands_view import *
 from .public_commands_view import *
 from .install_command_view import *
 from .installed_command_view import *
+from .update_command_after_train import *

@@ -12,7 +12,7 @@ from scripts.api.commands.utils import (
     _preprocess_edit_request,
     _should_rebuild,
     _should_retrain,
-    _prepare_script_data,
+    _prepare_script_data, update_nlp_model,
 )
 from scripts.models import (
     BaseCommand,
@@ -50,8 +50,7 @@ class CommandDetail(generics.RetrieveUpdateDestroyAPIView):
         if _should_retrain(parameters, patterns):
             self.update_patterns(patterns)
             self.update_parameters(parameters)
-            # TODO: retrain
-            pass
+            update_nlp_model(self.command, "PUT")
 
         if request.data.get('icon') is not None:
             self.update_icon_file(request.data.get('icon'))
@@ -102,6 +101,7 @@ class CommandDetail(generics.RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         self.command = self.get_object()
         self.clean_before_delete()
+        update_nlp_model(self.command, "DELETE")
         return self.destroy(request, *args, **kwargs)
 
     def clean_before_delete(self):

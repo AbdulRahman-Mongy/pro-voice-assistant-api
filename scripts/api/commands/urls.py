@@ -11,4 +11,5 @@ urlpatterns = [
     path('public/', views.PublicCommands.as_view(), name='public_commands'),
     path('installed/', views.InstalledCommands.as_view(), name='installed_commands'),
     path('progress/<int:id>/', views.UpdateCommandAfterBuild.as_view(), name='exec'),
+    path('rasa/progress/<int:id>/', views.UpdateCommandAfterTrain.as_view(), name='rasa'),
 ]
